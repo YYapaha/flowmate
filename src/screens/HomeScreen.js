@@ -3,27 +3,42 @@ import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useThoughts } from '../hooks/useThoughts';
 import { useShake } from '../hooks/useShake';
+import { useClassification } from '../hooks/useClassification';
+import { useDailyBrief } from '../hooks/useDailyBrief';
 import { Card } from '../components/Card';
 import { Fab } from '../components/Fab';
 import { CaptureModal } from '../components/CaptureModal';
 import { ProgressBar } from '../components/ProgressBar';
+import { BriefCard } from '../components/BriefCard';
 import { Colors, Spacing } from '../theme';
 
 export default function HomeScreen() {
-  const { thoughts, addThought, archiveThought } = useThoughts();
+  const { thoughts, addThought, archiveThought, updateTag, updateSteps } = useThoughts();
   const [modalVisible, setModalVisible] = useState(false);
+  const { classify } = useClassification();
+  const { brief, visible: briefVisible, dismiss: dismissBrief } = useDailyBrief(thoughts);
 
   const openModal = useCallback(() => setModalVisible(true), []);
-
   useShake(openModal);
+
+  const handleCapture = useCallback((text) => {
+    const id = addThought(text);
+    classify(id, text, (thoughtId, tag) => updateTag(thoughtId, tag));
+  }, [addThought, classify, updateTag]);
 
   const active   = thoughts.filter(t => !t.archived);
   const archived = thoughts.filter(t => t.archived);
   const progress = thoughts.length > 0 ? (archived.length / thoughts.length) * 100 : 0;
 
   const renderItem = useCallback(
-    ({ item }) => <Card thought={item} onArchive={archiveThought} />,
-    [archiveThought],
+    ({ item }) => (
+      <Card
+        thought={item}
+        onArchive={archiveThought}
+        onUpdateSteps={updateSteps}
+      />
+    ),
+    [archiveThought, updateSteps],
   );
 
   const ListHeader = (
@@ -41,6 +56,11 @@ export default function HomeScreen() {
             label="Rangées"
             valueLabel={`${archived.length} / ${thoughts.length}`}
           />
+        </View>
+      )}
+      {briefVisible && (
+        <View style={styles.briefWrap}>
+          <BriefCard brief={brief} onDismiss={dismissBrief} />
         </View>
       )}
     </View>
@@ -69,7 +89,7 @@ export default function HomeScreen() {
       <CaptureModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
-        onCapture={addThought}
+        onCapture={handleCapture}
       />
     </SafeAreaView>
   );
@@ -93,6 +113,7 @@ const styles = StyleSheet.create({
     opacity: 0.6,
   },
   progressWrap: { marginTop: Spacing.sm },
+  briefWrap: { marginTop: Spacing.md },
   empty: { alignItems: 'center', paddingTop: 48 },
   emptyText: {
     fontFamily: 'Lora_400Regular_Italic',

@@ -26,6 +26,13 @@ function reducer(state, action) {
           t.id === action.id ? { ...t, tag: action.tag } : t
         ),
       };
+    case 'UPDATE_STEPS':
+      return {
+        ...state,
+        thoughts: state.thoughts.map(t =>
+          t.id === action.id ? { ...t, steps: action.steps } : t
+        ),
+      };
     default:
       return state;
   }
@@ -76,9 +83,13 @@ export function ThoughtProvider({ children }) {
     dispatch({ type: 'UPDATE_TAG', id, tag });
   }, []);
 
+  const updateSteps = useCallback((id, steps) => {
+    dispatch({ type: 'UPDATE_STEPS', id, steps });
+  }, []);
+
   return (
     <ThoughtContext.Provider
-      value={{ thoughts: state.thoughts, loaded: state.loaded, addThought, archiveThought, deleteThought, updateTag }}
+      value={{ thoughts: state.thoughts, loaded: state.loaded, addThought, archiveThought, deleteThought, updateTag, updateSteps }}
     >
       {children}
     </ThoughtContext.Provider>

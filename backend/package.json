@@ -1,0 +1,9 @@
+{
+  "name": "flowmate-backend",
+  "version": "1.0.0",
+  "private": true,
+  "engines": { "node": ">=18" },
+  "dependencies": {
+    "openai": "^4.52.7"
+  }
+}
