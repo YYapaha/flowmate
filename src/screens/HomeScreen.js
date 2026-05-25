@@ -1,25 +1,106 @@
-import { View, Text, StyleSheet } from 'react-native';
-import { Colors, Typography, Spacing } from '../theme';
+import { useState, useCallback } from 'react';
+import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { SafeAreaView } from 'react-native-safe-area-context';
+import { useThoughts } from '../hooks/useThoughts';
+import { useShake } from '../hooks/useShake';
+import { Card } from '../components/Card';
+import { Fab } from '../components/Fab';
+import { CaptureModal } from '../components/CaptureModal';
+import { ProgressBar } from '../components/ProgressBar';
+import { Colors, Spacing } from '../theme';
 
 export default function HomeScreen() {
-  return (
-    <View style={styles.container}>
-      <Text style={Typography.h2}>Accueil</Text>
-      <Text style={[Typography.body, styles.sub]}>Tes pensées apparaîtront ici.</Text>
+  const { thoughts, addThought, archiveThought } = useThoughts();
+  const [modalVisible, setModalVisible] = useState(false);
+
+  const openModal = useCallback(() => setModalVisible(true), []);
+
+  useShake(openModal);
+
+  const active   = thoughts.filter(t => !t.archived);
+  const archived = thoughts.filter(t => t.archived);
+  const progress = thoughts.length > 0 ? (archived.length / thoughts.length) * 100 : 0;
+
+  const renderItem = useCallback(
+    ({ item }) => <Card thought={item} onArchive={archiveThought} />,
+    [archiveThought],
+  );
+
+  const ListHeader = (
+    <View style={styles.header}>
+      <Text style={styles.title}>Pensées du jour</Text>
+      <Text style={styles.sub}>
+        {active.length === 0
+          ? 'Aucune pensée pour l\'instant.'
+          : `${active.length} pensée${active.length > 1 ? 's' : ''} en attente`}
+      </Text>
+      {thoughts.length > 0 && (
+        <View style={styles.progressWrap}>
+          <ProgressBar
+            value={progress}
+            label="Rangées"
+            valueLabel={`${archived.length} / ${thoughts.length}`}
+          />
+        </View>
+      )}
     </View>
+  );
+
+  const ListEmpty = (
+    <View style={styles.empty}>
+      <Text style={styles.emptyText}>
+        Secoue le téléphone ou appuie sur + pour capturer une pensée.
+      </Text>
+    </View>
+  );
+
+  return (
+    <SafeAreaView style={styles.container} edges={['top']}>
+      <FlatList
+        data={active}
+        keyExtractor={item => item.id}
+        renderItem={renderItem}
+        ListHeaderComponent={ListHeader}
+        ListEmptyComponent={ListEmpty}
+        contentContainerStyle={styles.list}
+        initialNumToRender={10}
+      />
+      <Fab onPress={openModal} />
+      <CaptureModal
+        visible={modalVisible}
+        onClose={() => setModalVisible(false)}
+        onCapture={addThought}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    backgroundColor: Colors.paper,
-    alignItems: 'center',
-    justifyContent: 'center',
-    padding: Spacing.lg,
+  container: { flex: 1, backgroundColor: Colors.paper },
+  list: { padding: Spacing.md, paddingBottom: 100 },
+  header: { marginBottom: Spacing.lg, gap: 5 },
+  title: {
+    fontFamily: 'Jost_600SemiBold',
+    fontSize: 28,
+    lineHeight: 34,
+    letterSpacing: -0.3,
+    color: Colors.sepia,
   },
   sub: {
-    marginTop: Spacing.sm,
-    opacity: 0.65,
+    fontFamily: 'Lora_400Regular_Italic',
+    fontSize: 15,
+    color: Colors.sepia,
+    opacity: 0.6,
+  },
+  progressWrap: { marginTop: Spacing.sm },
+  empty: { alignItems: 'center', paddingTop: 48 },
+  emptyText: {
+    fontFamily: 'Lora_400Regular_Italic',
+    fontSize: 16,
+    color: Colors.sepia,
+    opacity: 0.45,
+    textAlign: 'center',
+    maxWidth: 260,
+    lineHeight: 25,
   },
 });

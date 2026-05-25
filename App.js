@@ -5,23 +5,12 @@ import { SafeAreaProvider } from 'react-native-safe-area-context';
 import * as SplashScreen from 'expo-splash-screen';
 import { useFonts } from 'expo-font';
 
-import {
-  Jost_400Regular,
-  Jost_500Medium,
-  Jost_600SemiBold,
-} from '@expo-google-fonts/jost';
-import {
-  Lora_400Regular,
-  Lora_400Regular_Italic,
-} from '@expo-google-fonts/lora';
-import {
-  DMSans_400Regular,
-  DMSans_500Medium,
-} from '@expo-google-fonts/dm-sans';
-import {
-  JetBrainsMono_400Regular,
-} from '@expo-google-fonts/jetbrains-mono';
+import { Jost_400Regular, Jost_500Medium, Jost_600SemiBold } from '@expo-google-fonts/jost';
+import { Lora_400Regular, Lora_400Regular_Italic } from '@expo-google-fonts/lora';
+import { DMSans_400Regular, DMSans_500Medium } from '@expo-google-fonts/dm-sans';
+import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 
+import { ThoughtProvider } from './src/context/ThoughtContext';
 import AppNavigator from './src/navigation';
 import { Colors } from './src/theme';
 
@@ -40,19 +29,17 @@ export default function App() {
   });
 
   useEffect(() => {
-    if (fontsLoaded) {
-      SplashScreen.hideAsync();
-    }
+    if (fontsLoaded) SplashScreen.hideAsync();
   }, [fontsLoaded]);
 
-  if (!fontsLoaded) {
-    return null;
-  }
+  if (!fontsLoaded) return null;
 
   return (
     <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.paper }}>
       <SafeAreaProvider>
-        <AppNavigator />
+        <ThoughtProvider>
+          <AppNavigator />
+        </ThoughtProvider>
         <StatusBar style="dark" backgroundColor={Colors.paper} />
       </SafeAreaProvider>
     </GestureHandlerRootView>
