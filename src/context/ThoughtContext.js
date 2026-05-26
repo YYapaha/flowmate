@@ -4,6 +4,17 @@ import * as Haptics from 'expo-haptics';
 import { loadThoughts, saveThoughts } from '../utils/storage';
 import { classifyThought } from '../services/api';
 
+// Canonical tags accepted by the UI — guards against unexpected API responses
+const KNOWN_TAGS = new Set([
+  'tâche', 'idée', 'rendez-vous', 'émotion', 'rappel',
+  'routine', 'achat', 'santé', 'travail', 'autre',
+]);
+
+function normalizeTag(raw) {
+  const t = (raw ?? '').trim().toLowerCase();
+  return KNOWN_TAGS.has(t) ? t : 'autre';
+}
+
 export const ThoughtContext = createContext(null);
 
 function reducer(state, action) {
@@ -78,7 +89,7 @@ export function ThoughtProvider({ children }) {
 
     setClassifyingIds(prev => { const s = new Set(prev); s.add(id); return s; });
     try {
-      const tag = await classifyThought(text);
+      const tag = normalizeTag(await classifyThought(text));
       sessionCache.current.set(key, tag);
       dispatch({ type: 'UPDATE_TAG', id, tag });
       Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Light).catch(() => {});

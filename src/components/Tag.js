@@ -8,6 +8,12 @@ const TAG_MAP = {
   'rappel':      { bg: Colors.tagPetrolBg,  fg: Colors.tagPetrolFg },
   'rendez-vous': { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
   'projet':      { bg: Colors.tagPetrolBg,  fg: Colors.tagPetrolFg },
+  // new Sprint 3 categories
+  'routine':     { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
+  'achat':       { bg: Colors.tagMustardBg, fg: Colors.tagMustardFg },
+  'santé':       { bg: Colors.tagTerraBg,   fg: Colors.tagTerraFg },
+  'travail':     { bg: Colors.tagPetrolBg,  fg: Colors.tagPetrolFg },
+  // defaults
   'autre':       { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
   'en cours':    { bg: Colors.line,         fg: Colors.sepia },
 };
