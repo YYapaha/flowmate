@@ -1,8 +1,36 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, TouchableOpacity, Modal, Pressable, StyleSheet } from 'react-native';
-import { Colors, Radii, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Radii, Shadows } from '../theme';
+
+function makeStyles(colors) {
+  return StyleSheet.create({
+    trigger: { padding: 6, alignItems: 'center', gap: 3 },
+    dot: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: colors.sepia, opacity: 0.45 },
+    backdrop: {
+      flex: 1,
+      backgroundColor: 'rgba(0,0,0,0.30)',
+      justifyContent: 'center',
+      alignItems: 'center',
+    },
+    menu: {
+      backgroundColor: colors.paper,
+      borderRadius: Radii.card,
+      minWidth: 170,
+      paddingVertical: 6,
+      borderWidth: 1,
+      borderColor: colors.line,
+      ...Shadows.soft,
+    },
+    item: { paddingVertical: 12, paddingHorizontal: 20 },
+    itemText: { fontFamily: 'DMSans_400Regular', fontSize: 14, color: colors.sepia },
+    sep: { height: 1, backgroundColor: colors.line, marginHorizontal: 12 },
+  });
+}
 
 export function KebabMenu({ onExpand, onArchive }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [open, setOpen] = useState(false);
 
   const action = (fn) => () => { setOpen(false); fn?.(); };
@@ -31,26 +59,3 @@ export function KebabMenu({ onExpand, onArchive }) {
     </View>
   );
 }
-
-const styles = StyleSheet.create({
-  trigger: { padding: 6, alignItems: 'center', gap: 3 },
-  dot: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: Colors.sepia, opacity: 0.45 },
-  backdrop: {
-    flex: 1,
-    backgroundColor: 'rgba(62,58,53,0.18)',
-    justifyContent: 'center',
-    alignItems: 'center',
-  },
-  menu: {
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.card,
-    minWidth: 170,
-    paddingVertical: 6,
-    borderWidth: 1,
-    borderColor: Colors.line,
-    ...Shadows.soft,
-  },
-  item: { paddingVertical: 12, paddingHorizontal: 20 },
-  itemText: { fontFamily: 'DMSans_400Regular', fontSize: 14, color: Colors.sepia },
-  sep: { height: 1, backgroundColor: Colors.line, marginHorizontal: 12 },
-});

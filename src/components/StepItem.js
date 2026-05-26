@@ -1,7 +1,53 @@
+import { useMemo } from 'react';
 import { Pressable, View, Text, StyleSheet } from 'react-native';
-import { Colors, Radii, Spacing } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Radii, Spacing } from '../theme';
+
+function makeStyles(colors) {
+  return StyleSheet.create({
+    row: {
+      flexDirection: 'row',
+      alignItems: 'flex-start',
+      gap: Spacing.sm,
+      paddingVertical: 4,
+    },
+    box: {
+      width: 18,
+      height: 18,
+      borderRadius: Radii.icon,
+      borderWidth: 1.5,
+      borderColor: colors.mustard,
+      alignItems: 'center',
+      justifyContent: 'center',
+      marginTop: 1,
+    },
+    boxDone: {
+      backgroundColor: colors.mustard,
+      borderColor: colors.mustard,
+    },
+    check: {
+      fontSize: 11,
+      color: colors.paper,
+      fontFamily: 'DMSans_500Medium',
+    },
+    label: {
+      flex: 1,
+      fontFamily: 'DMSans_400Regular',
+      fontSize: 13,
+      color: colors.sepia,
+      lineHeight: 20,
+    },
+    labelDone: {
+      textDecorationLine: 'line-through',
+      opacity: 0.45,
+    },
+  });
+}
 
 export function StepItem({ label, done, onToggle }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   return (
     <Pressable onPress={onToggle} style={styles.row}>
       <View style={[styles.box, done && styles.boxDone]}>
@@ -11,42 +57,3 @@ export function StepItem({ label, done, onToggle }) {
     </Pressable>
   );
 }
-
-const styles = StyleSheet.create({
-  row: {
-    flexDirection: 'row',
-    alignItems: 'flex-start',
-    gap: Spacing.sm,
-    paddingVertical: 4,
-  },
-  box: {
-    width: 18,
-    height: 18,
-    borderRadius: Radii.icon,
-    borderWidth: 1.5,
-    borderColor: Colors.mustard,
-    alignItems: 'center',
-    justifyContent: 'center',
-    marginTop: 1,
-  },
-  boxDone: {
-    backgroundColor: Colors.mustard,
-    borderColor: Colors.mustard,
-  },
-  check: {
-    fontSize: 11,
-    color: Colors.paper,
-    fontFamily: 'DMSans_500Medium',
-  },
-  label: {
-    flex: 1,
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 13,
-    color: Colors.sepia,
-    lineHeight: 20,
-  },
-  labelDone: {
-    textDecorationLine: 'line-through',
-    opacity: 0.45,
-  },
-});

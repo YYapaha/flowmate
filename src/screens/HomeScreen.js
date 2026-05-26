@@ -1,6 +1,7 @@
-import { useState, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
 import { useShake } from '../hooks/useShake';
 import { useDailyBrief } from '../hooks/useDailyBrief';
@@ -9,9 +10,44 @@ import { Fab } from '../components/Fab';
 import { CaptureModal } from '../components/CaptureModal';
 import { ProgressBar } from '../components/ProgressBar';
 import { BriefCard } from '../components/BriefCard';
-import { Colors, Spacing } from '../theme';
+import { Spacing } from '../theme';
+
+function makeStyles(colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.paper },
+    list: { padding: Spacing.md, paddingBottom: 100 },
+    header: { marginBottom: Spacing.lg, gap: 5 },
+    title: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 28,
+      lineHeight: 34,
+      letterSpacing: -0.3,
+      color: colors.sepia,
+    },
+    sub: {
+      fontFamily: 'Lora_400Regular_Italic',
+      fontSize: 15,
+      color: colors.sepia,
+      opacity: 0.6,
+    },
+    progressWrap: { marginTop: Spacing.sm },
+    briefWrap: { marginTop: Spacing.md },
+    empty: { alignItems: 'center', paddingTop: 48 },
+    emptyText: {
+      fontFamily: 'Lora_400Regular_Italic',
+      fontSize: 16,
+      color: colors.sepia,
+      opacity: 0.45,
+      textAlign: 'center',
+      maxWidth: 260,
+      lineHeight: 25,
+    },
+  });
+}
 
 export default function HomeScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { thoughts, addThought, archiveThought, updateSteps } = useThoughts();
   const [modalVisible, setModalVisible] = useState(false);
   const { brief, visible: briefVisible, dismiss: dismissBrief } = useDailyBrief(thoughts);
@@ -19,10 +55,7 @@ export default function HomeScreen() {
   const openModal = useCallback(() => setModalVisible(true), []);
   useShake(openModal);
 
-  // addThought now internally schedules classification via ThoughtContext
-  const handleCapture = useCallback((text) => {
-    addThought(text);
-  }, [addThought]);
+  const handleCapture = useCallback((text) => { addThought(text); }, [addThought]);
 
   const active   = thoughts.filter(t => !t.archived);
   const archived = thoughts.filter(t => t.archived);
@@ -30,11 +63,7 @@ export default function HomeScreen() {
 
   const renderItem = useCallback(
     ({ item }) => (
-      <Card
-        thought={item}
-        onArchive={archiveThought}
-        onUpdateSteps={updateSteps}
-      />
+      <Card thought={item} onArchive={archiveThought} onUpdateSteps={updateSteps} />
     ),
     [archiveThought, updateSteps],
   );
@@ -92,34 +121,3 @@ export default function HomeScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.paper },
-  list: { padding: Spacing.md, paddingBottom: 100 },
-  header: { marginBottom: Spacing.lg, gap: 5 },
-  title: {
-    fontFamily: 'Jost_600SemiBold',
-    fontSize: 28,
-    lineHeight: 34,
-    letterSpacing: -0.3,
-    color: Colors.sepia,
-  },
-  sub: {
-    fontFamily: 'Lora_400Regular_Italic',
-    fontSize: 15,
-    color: Colors.sepia,
-    opacity: 0.6,
-  },
-  progressWrap: { marginTop: Spacing.sm },
-  briefWrap: { marginTop: Spacing.md },
-  empty: { alignItems: 'center', paddingTop: 48 },
-  emptyText: {
-    fontFamily: 'Lora_400Regular_Italic',
-    fontSize: 16,
-    color: Colors.sepia,
-    opacity: 0.45,
-    textAlign: 'center',
-    maxWidth: 260,
-    lineHeight: 25,
-  },
-});

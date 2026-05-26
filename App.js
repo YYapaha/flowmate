@@ -11,10 +11,28 @@ import { DMSans_400Regular, DMSans_500Medium } from '@expo-google-fonts/dm-sans'
 import { JetBrainsMono_400Regular } from '@expo-google-fonts/jetbrains-mono';
 
 import { ThoughtProvider } from './src/context/ThoughtContext';
+import { ThemeProvider, useTheme } from './src/context/ThemeContext';
 import AppNavigator from './src/navigation';
-import { Colors } from './src/theme';
 
 SplashScreen.preventAutoHideAsync();
+
+/** Inner component — can call useTheme() safely inside ThemeProvider. */
+function AppRoot() {
+  const { colors, isDark } = useTheme();
+  return (
+    <GestureHandlerRootView style={{ flex: 1, backgroundColor: colors.paper }}>
+      <SafeAreaProvider>
+        <ThoughtProvider>
+          <AppNavigator />
+        </ThoughtProvider>
+        <StatusBar
+          style={isDark ? 'light' : 'dark'}
+          backgroundColor={colors.paper}
+        />
+      </SafeAreaProvider>
+    </GestureHandlerRootView>
+  );
+}
 
 export default function App() {
   const [fontsLoaded] = useFonts({
@@ -35,13 +53,8 @@ export default function App() {
   if (!fontsLoaded) return null;
 
   return (
-    <GestureHandlerRootView style={{ flex: 1, backgroundColor: Colors.paper }}>
-      <SafeAreaProvider>
-        <ThoughtProvider>
-          <AppNavigator />
-        </ThoughtProvider>
-        <StatusBar style="dark" backgroundColor={Colors.paper} />
-      </SafeAreaProvider>
-    </GestureHandlerRootView>
+    <ThemeProvider>
+      <AppRoot />
+    </ThemeProvider>
   );
 }

@@ -1,4 +1,4 @@
-import { useState, useEffect, useRef } from 'react';
+import { useMemo, useState, useEffect, useRef } from 'react';
 import {
   Modal,
   View,
@@ -9,16 +9,70 @@ import {
   Text,
 } from 'react-native';
 import * as Haptics from 'expo-haptics';
+import { useTheme } from '../context/ThemeContext';
 import { loadDraft, saveDraft } from '../utils/storage';
 import { Button } from './Button';
-import { Colors, Radii, Shadows, Spacing } from '../theme';
+import { Radii, Shadows, Spacing } from '../theme';
+
+function makeStyles(colors) {
+  return StyleSheet.create({
+    overlay: {
+      flex: 1,
+      justifyContent: 'flex-end',
+      backgroundColor: 'rgba(0,0,0,0.38)',
+    },
+    sheet: {
+      backgroundColor: colors.paper,
+      borderTopLeftRadius: 24,
+      borderTopRightRadius: 24,
+      padding: Spacing.xl,
+      paddingTop: 16,
+      paddingBottom: Spacing.xxl,
+      gap: 20,
+      ...Shadows.soft,
+    },
+    handle: {
+      alignSelf: 'center',
+      width: 36,
+      height: 4,
+      borderRadius: Radii.pill,
+      backgroundColor: colors.line2,
+      marginBottom: 4,
+    },
+    prompt: {
+      fontFamily: 'Jost_500Medium',
+      fontSize: 19,
+      color: colors.sepia,
+      opacity: 0.55,
+      textAlign: 'center',
+      lineHeight: 27,
+    },
+    input: {
+      fontFamily: 'Lora_400Regular',
+      fontSize: 18,
+      color: colors.sepia,
+      borderBottomWidth: 2,
+      borderBottomColor: colors.line2,
+      paddingVertical: 10,
+      paddingHorizontal: 2,
+      minHeight: 100,
+      lineHeight: 27,
+    },
+    inputFocused: {
+      borderBottomColor: colors.mustard,
+    },
+    actions: { flexDirection: 'row', gap: 12 },
+    btnFlex: { flex: 1 },
+  });
+}
 
 export function CaptureModal({ visible, onClose, onCapture }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const [text, setText] = useState('');
   const [focused, setFocused] = useState(false);
   const inputRef = useRef(null);
 
-  // Restore draft each time modal opens
   useEffect(() => {
     if (!visible) return;
     loadDraft().then(draft => { if (draft) setText(draft); });
@@ -41,10 +95,7 @@ export function CaptureModal({ visible, onClose, onCapture }) {
     onClose();
   };
 
-  const handleCancel = () => {
-    onClose();
-    // Keep the draft so text isn't lost on accidental cancel
-  };
+  const handleCancel = () => { onClose(); };
 
   return (
     <Modal
@@ -69,78 +120,18 @@ export function CaptureModal({ visible, onClose, onCapture }) {
             value={text}
             onChangeText={handleChange}
             placeholder="…"
-            placeholderTextColor={`${Colors.sepia}44`}
+            placeholderTextColor={`${colors.sepia}44`}
             multiline
             textAlignVertical="top"
             onFocus={() => setFocused(true)}
             onBlur={() => setFocused(false)}
           />
           <View style={styles.actions}>
-            <Button
-              label="Capturer"
-              variant="primary"
-              onPress={handleCapture}
-              style={styles.btnFlex}
-            />
-            <Button
-              label="Annuler"
-              variant="ghost"
-              onPress={handleCancel}
-              style={styles.btnFlex}
-            />
+            <Button label="Capturer" variant="primary"  onPress={handleCapture} style={styles.btnFlex} />
+            <Button label="Annuler"  variant="ghost"    onPress={handleCancel}  style={styles.btnFlex} />
           </View>
         </View>
       </KeyboardAvoidingView>
     </Modal>
   );
 }
-
-const styles = StyleSheet.create({
-  overlay: {
-    flex: 1,
-    justifyContent: 'flex-end',
-    backgroundColor: 'rgba(62,58,53,0.28)',
-  },
-  sheet: {
-    backgroundColor: Colors.paper,
-    borderTopLeftRadius: 24,
-    borderTopRightRadius: 24,
-    padding: Spacing.xl,
-    paddingTop: 16,
-    paddingBottom: Spacing.xxl,
-    gap: 20,
-    ...Shadows.soft,
-  },
-  handle: {
-    alignSelf: 'center',
-    width: 36,
-    height: 4,
-    borderRadius: Radii.pill,
-    backgroundColor: Colors.line2,
-    marginBottom: 4,
-  },
-  prompt: {
-    fontFamily: 'Jost_500Medium',
-    fontSize: 19,
-    color: Colors.sepia,
-    opacity: 0.55,
-    textAlign: 'center',
-    lineHeight: 27,
-  },
-  input: {
-    fontFamily: 'Lora_400Regular',
-    fontSize: 18,
-    color: Colors.sepia,
-    borderBottomWidth: 2,
-    borderBottomColor: Colors.line2,
-    paddingVertical: 10,
-    paddingHorizontal: 2,
-    minHeight: 100,
-    lineHeight: 27,
-  },
-  inputFocused: {
-    borderBottomColor: Colors.mustard,
-  },
-  actions: { flexDirection: 'row', gap: 12 },
-  btnFlex: { flex: 1 },
-});

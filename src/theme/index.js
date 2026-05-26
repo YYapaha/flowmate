@@ -1,6 +1,7 @@
-// Flowmate design system — translated from design-system.css (mid-century modern)
+// Flowmate design system — mid-century modern
+// Two palettes; consumers should use useTheme().colors instead of Colors directly.
 
-export const Colors = {
+export const lightPalette = {
   // Primary surfaces
   paper:   '#FAF8F5',
   paper2:  '#F3EFE7',
@@ -22,7 +23,7 @@ export const Colors = {
   line:    '#E6DFD2',
   line2:   '#DCD3C2',
 
-  // Tag backgrounds (lighter tints)
+  // Tag chips
   tagMustardBg: '#F0D78A',
   tagMustardFg: '#6A4A05',
   tagTerraBg:   '#ECC4AC',
@@ -32,6 +33,42 @@ export const Colors = {
   tagSageBg:    '#D9E0D5',
   tagSageFg:    '#3A4A36',
 };
+
+export const darkPalette = {
+  // Primary surfaces
+  paper:   '#1E1C1A',
+  paper2:  '#2A2826',
+  sage:    '#2A2A28',
+  petrol:  '#1F2A32',
+
+  // Accents (slightly brighter for dark bg legibility)
+  mustard: '#E6B422',
+  terra:   '#E0926C',
+
+  // Text (inverted — light on dark)
+  sepia:   '#E6DFD2',
+
+  // Gradient stops
+  teak:    '#B87A4A',
+  honey:   '#E6B422',
+
+  // Lines / borders
+  line:    '#3A3A36',
+  line2:   '#4A4844',
+
+  // Tag chips (dark tints of accent colors)
+  tagMustardBg: '#342600',
+  tagMustardFg: '#E6B422',
+  tagTerraBg:   '#3A1A0A',
+  tagTerraFg:   '#E0926C',
+  tagPetrolBg:  '#121F28',
+  tagPetrolFg:  '#A3B5C7',
+  tagSageBg:    '#1E2620',
+  tagSageFg:    '#C5CFC1',
+};
+
+/** Backward-compat alias — prefer useTheme().colors in new code. */
+export const Colors = lightPalette;
 
 export const Fonts = {
   display: 'Jost_600SemiBold',
@@ -51,11 +88,12 @@ export const Radii = {
   icon: 8,
 };
 
+/** Shadows are constant — same geometry on both themes. */
 export const Shadows = {
   soft: {
-    shadowColor: '#3E3A35',
+    shadowColor: '#000',
     shadowOffset: { width: 0, height: 2 },
-    shadowOpacity: 0.06,
+    shadowOpacity: 0.10,
     shadowRadius: 12,
     elevation: 3,
   },
@@ -83,50 +121,42 @@ export const Typography = {
     fontSize: 40,
     lineHeight: 46,
     letterSpacing: -0.6,
-    color: Colors.sepia,
   },
   h2: {
     fontFamily: 'Jost_500Medium',
     fontSize: 28,
     lineHeight: 34,
     letterSpacing: -0.3,
-    color: Colors.sepia,
   },
   h3: {
     fontFamily: 'Jost_500Medium',
     fontSize: 20,
     lineHeight: 26,
-    color: Colors.sepia,
   },
   h4: {
     fontFamily: 'Jost_500Medium',
     fontSize: 17,
     lineHeight: 22,
-    color: Colors.sepia,
   },
   body: {
     fontFamily: 'Lora_400Regular',
     fontSize: 16,
     lineHeight: 26,
-    color: Colors.sepia,
   },
   bodyItalic: {
     fontFamily: 'Lora_400Regular_Italic',
     fontSize: 16,
     lineHeight: 26,
-    color: Colors.sepia,
   },
   lede: {
     fontFamily: 'Lora_400Regular',
     fontSize: 19,
     lineHeight: 30,
-    color: Colors.sepia,
   },
   small: {
     fontFamily: 'Lora_400Regular',
     fontSize: 14,
     lineHeight: 22,
-    color: Colors.sepia,
   },
   uiButton: {
     fontFamily: 'DMSans_500Medium',
@@ -145,7 +175,6 @@ export const Typography = {
     fontFamily: 'DMSans_400Regular',
     fontSize: 12,
     lineHeight: 16,
-    color: Colors.sepia,
   },
   eyebrow: {
     fontFamily: 'DMSans_500Medium',
@@ -153,6 +182,5 @@ export const Typography = {
     lineHeight: 16,
     letterSpacing: 1.6,
     textTransform: 'uppercase',
-    color: Colors.terra,
   },
 };

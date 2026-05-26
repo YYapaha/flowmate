@@ -1,18 +1,25 @@
+import { useMemo } from 'react';
 import { Text, Pressable, StyleSheet, ActivityIndicator } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { Colors, Radii } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Radii } from '../theme';
 
-const VARIANTS = {
-  primary:   { bg: Colors.mustard, color: Colors.paper, border: null },
-  secondary: { bg: Colors.sepia,   color: Colors.paper, border: null },
-  ghost:     { bg: 'transparent',  color: Colors.sepia, border: Colors.sepia },
-  accent:    { bg: Colors.terra,   color: Colors.paper, border: null },
-};
+function getVariants(colors) {
+  return {
+    primary:   { bg: colors.mustard, color: colors.paper,  border: null },
+    secondary: { bg: colors.sepia,   color: colors.paper2, border: null },
+    ghost:     { bg: 'transparent',  color: colors.sepia,  border: colors.sepia },
+    accent:    { bg: colors.terra,   color: colors.paper,  border: null },
+  };
+}
 
 export function Button({ label, variant = 'primary', onPress, loading = false, style }) {
+  const { colors } = useTheme();
   const scale = useSharedValue(1);
-  const v = VARIANTS[variant] ?? VARIANTS.primary;
+
+  const variants = useMemo(() => getVariants(colors), [colors]);
+  const v = variants[variant] ?? variants.primary;
 
   const animStyle = useAnimatedStyle(() => ({ transform: [{ scale: scale.value }] }));
 

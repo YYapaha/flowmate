@@ -2,13 +2,14 @@ import { useEffect } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
-import { Colors, Shadows } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Shadows } from '../theme';
 
 export function Fab({ onPress }) {
+  const { colors } = useTheme();
   const scale = useSharedValue(0);
 
   useEffect(() => {
-    // Pop in on mount
     scale.value = withSpring(1, { damping: 12, stiffness: 180 });
   }, []);
 
@@ -22,9 +23,13 @@ export function Fab({ onPress }) {
   };
 
   return (
-    <Animated.View style={[styles.fab, animStyle]}>
+    <Animated.View style={[
+      styles.fab,
+      { backgroundColor: colors.mustard },
+      animStyle,
+    ]}>
       <Pressable onPress={handlePress} style={styles.inner}>
-        <Animated.Text style={styles.plus}>+</Animated.Text>
+        <Animated.Text style={[styles.plus, { color: colors.paper }]}>+</Animated.Text>
       </Pressable>
     </Animated.View>
   );
@@ -38,7 +43,6 @@ const styles = StyleSheet.create({
     width: 56,
     height: 56,
     borderRadius: 28,
-    backgroundColor: Colors.mustard,
     ...Shadows.fab,
   },
   inner: {
@@ -50,7 +54,6 @@ const styles = StyleSheet.create({
   plus: {
     fontFamily: 'DMSans_500Medium',
     fontSize: 30,
-    color: Colors.paper,
     lineHeight: 36,
     marginTop: -1,
   },

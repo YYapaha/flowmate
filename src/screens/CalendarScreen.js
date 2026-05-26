@@ -1,11 +1,12 @@
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
+import { useTheme } from '../context/ThemeContext';
 import { MonthCalendar } from '../components/MonthCalendar';
 import { useThoughts } from '../hooks/useThoughts';
 import { Card } from '../components/Card';
 import { AddReminderModal } from '../components/AddReminderModal';
-import { Colors, Spacing } from '../theme';
+import { Spacing } from '../theme';
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -19,47 +20,108 @@ function formatDayFR(iso) {
   return `${parseInt(d, 10)} ${months[parseInt(m, 10) - 1]} ${y}`;
 }
 
+function makeStyles(colors) {
+  return StyleSheet.create({
+    container:  { flex: 1, backgroundColor: colors.paper },
+    title: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 28,
+      lineHeight: 34,
+      letterSpacing: -0.3,
+      color: colors.sepia,
+      marginTop: Spacing.sm,
+      paddingHorizontal: Spacing.md,
+      paddingTop: Spacing.sm,
+      marginBottom: 4,
+    },
+    list: { paddingHorizontal: Spacing.md, paddingBottom: 100 },
+    dayHeader: {
+      flexDirection: 'row',
+      alignItems: 'baseline',
+      justifyContent: 'space-between',
+      paddingVertical: Spacing.sm,
+      marginBottom: 4,
+    },
+    dayLabel: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 17,
+      color: colors.sepia,
+    },
+    dayCount: {
+      fontFamily: 'DMSans_400Regular',
+      fontSize: 12,
+      color: colors.sepia,
+      opacity: 0.5,
+    },
+    empty: { alignItems: 'center', paddingTop: 32, gap: 6 },
+    emptyText: {
+      fontFamily: 'Lora_400Regular',
+      fontSize: 15,
+      color: colors.sepia,
+      opacity: 0.5,
+    },
+    emptyHint: {
+      fontFamily: 'Lora_400Regular_Italic',
+      fontSize: 13,
+      color: colors.sepia,
+      opacity: 0.35,
+    },
+    fab: {
+      position: 'absolute',
+      bottom: 28,
+      right: 24,
+      width: 52,
+      height: 52,
+      borderRadius: 26,
+      backgroundColor: colors.mustard,
+      alignItems: 'center',
+      justifyContent: 'center',
+      shadowColor: colors.mustard,
+      shadowOffset: { width: 0, height: 6 },
+      shadowOpacity: 0.38,
+      shadowRadius: 16,
+      elevation: 8,
+    },
+    fabLabel: {
+      fontSize: 26,
+      lineHeight: 30,
+      color: colors.paper,
+      fontFamily: 'DMSans_400Regular',
+    },
+  });
+}
+
 export default function CalendarScreen() {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { thoughts, addManualReminder, archiveThought, updateSteps } = useThoughts();
   const [selectedDay, setSelectedDay] = useState(todayISO());
   const [modalVisible, setModalVisible] = useState(false);
 
-  // Build markedDates for the Calendar component
   const markedDates = useMemo(() => {
     const marks = {};
-
     thoughts.forEach(t => {
       const date = t.reminder?.date;
       if (!t.reminder?.hasDate || !date) return;
-      marks[date] = {
-        ...marks[date],
-        marked: true,
-        dotColor: Colors.mustard,
-      };
+      marks[date] = { ...marks[date], marked: true, dotColor: colors.mustard };
     });
-
-    // Highlight selected day
     if (selectedDay) {
       marks[selectedDay] = {
         ...marks[selectedDay],
         selected: true,
-        selectedColor: Colors.mustard,
-        selectedTextColor: Colors.paper,
+        selectedColor: colors.mustard,
+        selectedTextColor: colors.paper,
       };
     }
-
     return marks;
-  }, [thoughts, selectedDay]);
+  }, [thoughts, selectedDay, colors.mustard, colors.paper]);
 
-  // Thoughts for the selected day
   const dayThoughts = useMemo(() => {
     if (!selectedDay) return [];
     return thoughts.filter(t => t.reminder?.date === selectedDay && !t.archived);
   }, [thoughts, selectedDay]);
 
-  const handleDayPress = useCallback((day) => {
-    setSelectedDay(day.dateString);
-  }, []);
+  const handleDayPress = useCallback((day) => { setSelectedDay(day.dateString); }, []);
 
   const handleAddReminder = useCallback(({ title, date, time, description }) => {
     addManualReminder(title, date, time, description);
@@ -79,12 +141,9 @@ export default function CalendarScreen() {
         selectedDay={selectedDay}
         onDayPress={handleDayPress}
       />
-
       <View style={styles.dayHeader}>
         <Text style={styles.dayLabel}>
-          {selectedDay === todayISO()
-            ? "Aujourd'hui"
-            : formatDayFR(selectedDay)}
+          {selectedDay === todayISO() ? "Aujourd'hui" : formatDayFR(selectedDay)}
         </Text>
         {dayThoughts.length > 0 && (
           <Text style={styles.dayCount}>
@@ -98,16 +157,13 @@ export default function CalendarScreen() {
   const ListEmpty = (
     <View style={styles.empty}>
       <Text style={styles.emptyText}>Rien ce jour-là.</Text>
-      <Text style={styles.emptyHint}>
-        {"Touche + si tu veux noter quelque chose."}
-      </Text>
+      <Text style={styles.emptyHint}>{"Touche + si tu veux noter quelque chose."}</Text>
     </View>
   );
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
       <Text style={styles.title}>Calendrier</Text>
-
       <FlatList
         data={dayThoughts}
         keyExtractor={item => item.id}
@@ -116,15 +172,12 @@ export default function CalendarScreen() {
         ListEmptyComponent={ListEmpty}
         contentContainerStyle={styles.list}
       />
-
-      {/* FAB */}
       <Pressable
         style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}
         onPress={() => setModalVisible(true)}
       >
         <Text style={styles.fabLabel}>+</Text>
       </Pressable>
-
       <AddReminderModal
         visible={modalVisible}
         onClose={() => setModalVisible(false)}
@@ -133,72 +186,3 @@ export default function CalendarScreen() {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container:  { flex: 1, backgroundColor: Colors.paper },
-  title: {
-    fontFamily: 'Jost_600SemiBold',
-    fontSize: 28,
-    lineHeight: 34,
-    letterSpacing: -0.3,
-    color: Colors.sepia,
-    marginTop: Spacing.sm,
-    paddingHorizontal: Spacing.md,
-    paddingTop: Spacing.sm,
-    marginBottom: 4,
-  },
-  list: { paddingHorizontal: Spacing.md, paddingBottom: 100 },
-  dayHeader: {
-    flexDirection: 'row',
-    alignItems: 'baseline',
-    justifyContent: 'space-between',
-    paddingVertical: Spacing.sm,
-    marginBottom: 4,
-  },
-  dayLabel: {
-    fontFamily: 'Jost_600SemiBold',
-    fontSize: 17,
-    color: Colors.sepia,
-  },
-  dayCount: {
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 12,
-    color: Colors.sepia,
-    opacity: 0.5,
-  },
-  empty: { alignItems: 'center', paddingTop: 32, gap: 6 },
-  emptyText: {
-    fontFamily: 'Lora_400Regular',
-    fontSize: 15,
-    color: Colors.sepia,
-    opacity: 0.5,
-  },
-  emptyHint: {
-    fontFamily: 'Lora_400Regular_Italic',
-    fontSize: 13,
-    color: Colors.sepia,
-    opacity: 0.35,
-  },
-  fab: {
-    position: 'absolute',
-    bottom: 28,
-    right: 24,
-    width: 52,
-    height: 52,
-    borderRadius: 26,
-    backgroundColor: Colors.mustard,
-    alignItems: 'center',
-    justifyContent: 'center',
-    shadowColor: Colors.mustard,
-    shadowOffset: { width: 0, height: 6 },
-    shadowOpacity: 0.38,
-    shadowRadius: 16,
-    elevation: 8,
-  },
-  fabLabel: {
-    fontSize: 26,
-    lineHeight: 30,
-    color: Colors.paper,
-    fontFamily: 'DMSans_400Regular',
-  },
-});

@@ -1,25 +1,29 @@
 import { Text, StyleSheet } from 'react-native';
-import { Colors, Radii } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Radii } from '../theme';
 
-const TAG_MAP = {
-  'idée':        { bg: Colors.tagMustardBg, fg: Colors.tagMustardFg },
-  'tâche':       { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
-  'émotion':     { bg: Colors.tagTerraBg,   fg: Colors.tagTerraFg },
-  'rappel':      { bg: Colors.tagPetrolBg,  fg: Colors.tagPetrolFg },
-  'rendez-vous': { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
-  'projet':      { bg: Colors.tagPetrolBg,  fg: Colors.tagPetrolFg },
-  // new Sprint 3 categories
-  'routine':     { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
-  'achat':       { bg: Colors.tagMustardBg, fg: Colors.tagMustardFg },
-  'santé':       { bg: Colors.tagTerraBg,   fg: Colors.tagTerraFg },
-  'travail':     { bg: Colors.tagPetrolBg,  fg: Colors.tagPetrolFg },
-  // defaults
-  'autre':       { bg: Colors.tagSageBg,    fg: Colors.tagSageFg },
-  'en cours':    { bg: Colors.line,         fg: Colors.sepia },
-};
+function getTagMap(colors) {
+  return {
+    'idée':        { bg: colors.tagMustardBg, fg: colors.tagMustardFg },
+    'tâche':       { bg: colors.tagSageBg,    fg: colors.tagSageFg },
+    'émotion':     { bg: colors.tagTerraBg,   fg: colors.tagTerraFg },
+    'rappel':      { bg: colors.tagPetrolBg,  fg: colors.tagPetrolFg },
+    'rendez-vous': { bg: colors.tagSageBg,    fg: colors.tagSageFg },
+    'projet':      { bg: colors.tagPetrolBg,  fg: colors.tagPetrolFg },
+    'routine':     { bg: colors.tagSageBg,    fg: colors.tagSageFg },
+    'achat':       { bg: colors.tagMustardBg, fg: colors.tagMustardFg },
+    'santé':       { bg: colors.tagTerraBg,   fg: colors.tagTerraFg },
+    'travail':     { bg: colors.tagPetrolBg,  fg: colors.tagPetrolFg },
+    'autre':       { bg: colors.tagSageBg,    fg: colors.tagSageFg },
+    'en cours':    { bg: colors.line,         fg: colors.sepia },
+  };
+}
 
 export function Tag({ label = 'autre' }) {
-  const { bg, fg } = TAG_MAP[label] ?? TAG_MAP['autre'];
+  const { colors } = useTheme();
+  const tagMap = getTagMap(colors);
+  const { bg, fg } = tagMap[label] ?? tagMap['autre'];
+
   return (
     <Text style={[styles.tag, { backgroundColor: bg, color: fg }]}>
       {label}

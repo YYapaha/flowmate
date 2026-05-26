@@ -2,9 +2,10 @@
  * MonthCalendar — composant calendrier maison, sans dépendance externe.
  * API proche de react-native-calendars pour faciliter une migration future.
  */
-import { useState, useMemo, useCallback } from 'react';
+import { useMemo, useState, useCallback } from 'react';
 import { View, Text, Pressable, StyleSheet } from 'react-native';
-import { Colors, Radii, Spacing } from '../theme';
+import { useTheme } from '../context/ThemeContext';
+import { Radii, Spacing } from '../theme';
 
 const MONTHS_FR = [
   'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
@@ -20,21 +21,83 @@ function isoFromYMD(y, m, d) {
   return `${y}-${String(m).padStart(2, '0')}-${String(d).padStart(2, '0')}`;
 }
 
-/** Returns an array of {dateString, dayOfWeek} for each cell in the 6×7 grid. */
 function buildGrid(year, month) {
-  const firstDay = new Date(year, month - 1, 1).getDay(); // 0=Sun
-  // Shift so Monday = 0
+  const firstDay = new Date(year, month - 1, 1).getDay();
   const offset = (firstDay + 6) % 7;
   const daysInMonth = new Date(year, month, 0).getDate();
   const cells = [];
   for (let i = 0; i < offset; i++) cells.push(null);
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
-  // Pad to complete the last row
   while (cells.length % 7 !== 0) cells.push(null);
   return cells;
 }
 
+function makeStyles(colors) {
+  return StyleSheet.create({
+    wrap: {
+      backgroundColor: colors.paper,
+      borderRadius: Radii.card,
+      borderWidth: 1,
+      borderColor: colors.line,
+      padding: Spacing.md,
+      paddingBottom: Spacing.sm,
+    },
+    header: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginBottom: Spacing.sm,
+    },
+    arrow: { width: 32, alignItems: 'center' },
+    arrowLabel: {
+      fontSize: 22,
+      color: colors.mustard,
+      fontFamily: 'DMSans_500Medium',
+      lineHeight: 26,
+    },
+    monthTitle: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 17,
+      color: colors.sepia,
+    },
+    weekRow: { flexDirection: 'row', marginBottom: 4 },
+    weekLabel: {
+      flex: 1,
+      textAlign: 'center',
+      fontFamily: 'DMSans_500Medium',
+      fontSize: 11,
+      color: colors.sepia,
+      opacity: 0.4,
+      letterSpacing: 0.5,
+    },
+    grid: { flexDirection: 'row', flexWrap: 'wrap' },
+    cell: {
+      width: `${100 / 7}%`,
+      height: 38,
+      alignItems: 'center',
+      justifyContent: 'center',
+      borderRadius: Radii.btn,
+      gap: 2,
+    },
+    cellSelected: { backgroundColor: colors.mustard },
+    cellToday:    { backgroundColor: colors.tagMustardBg },
+    cellPressed:  { opacity: 0.65 },
+    dayText: {
+      fontFamily: 'DMSans_400Regular',
+      fontSize: 14,
+      color: colors.sepia,
+    },
+    dayTextSelected: { color: colors.paper, fontFamily: 'DMSans_500Medium' },
+    dayTextToday:    { color: colors.mustard, fontFamily: 'DMSans_500Medium' },
+    dot:      { width: 4, height: 4, borderRadius: 2 },
+    dotEmpty: { width: 4, height: 4 },
+  });
+}
+
 export function MonthCalendar({ markedDates = {}, selectedDay, onDayPress }) {
+  const { colors } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
+
   const today = todayISO();
   const [year, setYear]   = useState(() => new Date().getFullYear());
   const [month, setMonth] = useState(() => new Date().getMonth() + 1);
@@ -72,11 +135,11 @@ export function MonthCalendar({ markedDates = {}, selectedDay, onDayPress }) {
       <View style={styles.grid}>
         {grid.map((day, idx) => {
           if (!day) return <View key={`e-${idx}`} style={styles.cell} />;
-          const iso       = isoFromYMD(year, month, day);
-          const isToday   = iso === today;
+          const iso        = isoFromYMD(year, month, day);
+          const isToday    = iso === today;
           const isSelected = iso === selectedDay;
-          const marked    = !!markedDates[iso]?.marked;
-          const dotColor  = markedDates[iso]?.dotColor ?? Colors.mustard;
+          const marked     = !!markedDates[iso]?.marked;
+          const dotColor   = markedDates[iso]?.dotColor ?? colors.mustard;
 
           return (
             <Pressable
@@ -97,7 +160,7 @@ export function MonthCalendar({ markedDates = {}, selectedDay, onDayPress }) {
                 {day}
               </Text>
               {marked
-                ? <View style={[styles.dot, { backgroundColor: isSelected ? Colors.paper : dotColor }]} />
+                ? <View style={[styles.dot, { backgroundColor: isSelected ? colors.paper : dotColor }]} />
                 : <View style={styles.dotEmpty} />}
             </Pressable>
           );
@@ -106,93 +169,3 @@ export function MonthCalendar({ markedDates = {}, selectedDay, onDayPress }) {
     </View>
   );
 }
-
-const CELL_SIZE = 38;
-
-const styles = StyleSheet.create({
-  wrap: {
-    backgroundColor: Colors.paper,
-    borderRadius: Radii.card,
-    borderWidth: 1,
-    borderColor: Colors.line,
-    padding: Spacing.md,
-    paddingBottom: Spacing.sm,
-  },
-  header: {
-    flexDirection: 'row',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-    marginBottom: Spacing.sm,
-  },
-  arrow: {
-    width: 32,
-    alignItems: 'center',
-  },
-  arrowLabel: {
-    fontSize: 22,
-    color: Colors.mustard,
-    fontFamily: 'DMSans_500Medium',
-    lineHeight: 26,
-  },
-  monthTitle: {
-    fontFamily: 'Jost_600SemiBold',
-    fontSize: 17,
-    color: Colors.sepia,
-  },
-  weekRow: {
-    flexDirection: 'row',
-    marginBottom: 4,
-  },
-  weekLabel: {
-    flex: 1,
-    textAlign: 'center',
-    fontFamily: 'DMSans_500Medium',
-    fontSize: 11,
-    color: Colors.sepia,
-    opacity: 0.4,
-    letterSpacing: 0.5,
-  },
-  grid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-  },
-  cell: {
-    width: `${100 / 7}%`,
-    height: CELL_SIZE,
-    alignItems: 'center',
-    justifyContent: 'center',
-    borderRadius: Radii.btn,
-    gap: 2,
-  },
-  cellSelected: {
-    backgroundColor: Colors.mustard,
-  },
-  cellToday: {
-    backgroundColor: Colors.tagMustardBg,
-  },
-  cellPressed: {
-    opacity: 0.65,
-  },
-  dayText: {
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 14,
-    color: Colors.sepia,
-  },
-  dayTextSelected: {
-    color: Colors.paper,
-    fontFamily: 'DMSans_500Medium',
-  },
-  dayTextToday: {
-    color: Colors.mustard,
-    fontFamily: 'DMSans_500Medium',
-  },
-  dot: {
-    width: 4,
-    height: 4,
-    borderRadius: 2,
-  },
-  dotEmpty: {
-    width: 4,
-    height: 4,
-  },
-});

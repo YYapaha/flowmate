@@ -1,24 +1,136 @@
-import { useState } from 'react';
+import { useMemo, useState } from 'react';
 import { View, Text, StyleSheet, Switch, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
+import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
-import { Colors, Radii, Shadows, Spacing } from '../theme';
+import { Radii, Shadows, Spacing } from '../theme';
 import appConfig from '../../app.json';
 
 const STORM_KEY = '@flowmate:stormMode';
 const APP_VERSION = appConfig.expo.version;
 
-function StatCard({ label, value }) {
-  return (
-    <View style={statStyles.card}>
-      <Text style={statStyles.value}>{value}</Text>
-      <Text style={statStyles.label}>{label}</Text>
-    </View>
-  );
+const THEME_OPTIONS = [
+  { value: 'system', label: 'Système' },
+  { value: 'light',  label: 'Clair'   },
+  { value: 'dark',   label: 'Sombre'  },
+];
+
+function makeStyles(colors) {
+  return StyleSheet.create({
+    container: { flex: 1, backgroundColor: colors.paper },
+    inner: { padding: Spacing.lg, gap: 24, paddingBottom: 40 },
+    title: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 28,
+      lineHeight: 34,
+      letterSpacing: -0.3,
+      color: colors.sepia,
+      marginTop: Spacing.sm,
+    },
+    statsGrid: {
+      flexDirection: 'row',
+      flexWrap: 'wrap',
+      gap: 12,
+    },
+    statCard: {
+      width: '47%',
+      backgroundColor: colors.paper2,
+      borderRadius: Radii.card,
+      padding: Spacing.md,
+      alignItems: 'center',
+      borderWidth: 1,
+      borderColor: colors.line,
+      gap: 4,
+      ...Shadows.soft,
+    },
+    statValue: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 32,
+      color: colors.sepia,
+      lineHeight: 38,
+    },
+    statLabel: {
+      fontFamily: 'DMSans_400Regular',
+      fontSize: 11,
+      color: colors.sepia,
+      opacity: 0.55,
+      letterSpacing: 0.4,
+    },
+    section: {
+      backgroundColor: colors.paper2,
+      borderRadius: Radii.card,
+      padding: Spacing.lg,
+      borderWidth: 1,
+      borderColor: colors.line,
+      ...Shadows.soft,
+    },
+    sectionLabel: {
+      fontFamily: 'DMSans_500Medium',
+      fontSize: 11,
+      letterSpacing: 1.4,
+      textTransform: 'uppercase',
+      color: colors.sepia,
+      opacity: 0.45,
+      marginBottom: Spacing.md,
+    },
+    row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
+    rowText: { flex: 1, gap: 3 },
+    rowLabel: { fontFamily: 'DMSans_500Medium', fontSize: 15, color: colors.sepia },
+    rowSub: {
+      fontFamily: 'Lora_400Regular',
+      fontSize: 13,
+      color: colors.sepia,
+      opacity: 0.6,
+      lineHeight: 18,
+    },
+    // Theme picker
+    themeRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
+    themeBtn: {
+      flex: 1,
+      paddingVertical: 9,
+      borderRadius: Radii.btn,
+      borderWidth: 1.5,
+      borderColor: colors.line2,
+      alignItems: 'center',
+    },
+    themeBtnActive: {
+      borderColor: colors.mustard,
+      backgroundColor: colors.tagMustardBg,
+    },
+    themeBtnLabel: {
+      fontFamily: 'DMSans_500Medium',
+      fontSize: 12,
+      color: colors.sepia,
+      opacity: 0.6,
+    },
+    themeBtnLabelActive: {
+      color: colors.mustard,
+      opacity: 1,
+    },
+    // Guide button
+    guideBtn: { paddingVertical: Spacing.sm },
+    guideBtnPressed: { opacity: 0.5 },
+    guideBtnLabel: {
+      fontFamily: 'DMSans_500Medium',
+      fontSize: 15,
+      color: colors.mustard,
+      letterSpacing: 0.2,
+    },
+    version: {
+      fontFamily: 'DMSans_400Regular',
+      fontSize: 12,
+      color: colors.sepia,
+      opacity: 0.35,
+      textAlign: 'center',
+      letterSpacing: 0.4,
+    },
+  });
 }
 
 export default function ProfileScreen({ navigation }) {
+  const { colors, mode, setMode } = useTheme();
+  const styles = useMemo(() => makeStyles(colors), [colors]);
   const { thoughts } = useThoughts();
   const [stormMode, setStormMode] = useState(false);
 
@@ -37,13 +149,44 @@ export default function ProfileScreen({ navigation }) {
       <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Profil</Text>
 
+        {/* Stats */}
         <View style={styles.statsGrid}>
-          <StatCard label="Capturées"   value={total}      />
-          <StatCard label="Rangées"     value={archived}   />
-          <StatCard label="À trier"     value={active}     />
-          <StatCard label="Décomposées" value={decomposed} />
+          {[
+            { label: 'Capturées',   value: total      },
+            { label: 'Rangées',     value: archived   },
+            { label: 'À trier',     value: active     },
+            { label: 'Décomposées', value: decomposed },
+          ].map(({ label, value }) => (
+            <View key={label} style={styles.statCard}>
+              <Text style={styles.statValue}>{value}</Text>
+              <Text style={styles.statLabel}>{label}</Text>
+            </View>
+          ))}
         </View>
 
+        {/* Appearance */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Apparence</Text>
+          <Text style={styles.rowLabel}>Thème</Text>
+          <View style={styles.themeRow}>
+            {THEME_OPTIONS.map(opt => (
+              <Pressable
+                key={opt.value}
+                style={[styles.themeBtn, mode === opt.value && styles.themeBtnActive]}
+                onPress={() => setMode(opt.value)}
+              >
+                <Text style={[
+                  styles.themeBtnLabel,
+                  mode === opt.value && styles.themeBtnLabelActive,
+                ]}>
+                  {opt.label}
+                </Text>
+              </Pressable>
+            ))}
+          </View>
+        </View>
+
+        {/* Options */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Options</Text>
           <View style={styles.row}>
@@ -56,12 +199,13 @@ export default function ProfileScreen({ navigation }) {
             <Switch
               value={stormMode}
               onValueChange={toggleStorm}
-              trackColor={{ false: Colors.line, true: Colors.mustard }}
-              thumbColor={Colors.paper}
+              trackColor={{ false: colors.line, true: colors.mustard }}
+              thumbColor={colors.paper}
             />
           </View>
         </View>
 
+        {/* Help */}
         <View style={styles.section}>
           <Text style={styles.sectionLabel}>Aide</Text>
           <Pressable
@@ -77,93 +221,3 @@ export default function ProfileScreen({ navigation }) {
     </SafeAreaView>
   );
 }
-
-const styles = StyleSheet.create({
-  container: { flex: 1, backgroundColor: Colors.paper },
-  inner: { padding: Spacing.lg, gap: 24, paddingBottom: 40 },
-  title: {
-    fontFamily: 'Jost_600SemiBold',
-    fontSize: 28,
-    lineHeight: 34,
-    letterSpacing: -0.3,
-    color: Colors.sepia,
-    marginTop: Spacing.sm,
-  },
-  statsGrid: {
-    flexDirection: 'row',
-    flexWrap: 'wrap',
-    gap: 12,
-  },
-  section: {
-    backgroundColor: Colors.paper2,
-    borderRadius: Radii.card,
-    padding: Spacing.lg,
-    borderWidth: 1,
-    borderColor: Colors.line,
-    ...Shadows.soft,
-  },
-  sectionLabel: {
-    fontFamily: 'DMSans_500Medium',
-    fontSize: 11,
-    letterSpacing: 1.4,
-    textTransform: 'uppercase',
-    color: Colors.sepia,
-    opacity: 0.45,
-    marginBottom: Spacing.md,
-  },
-  row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-  rowText: { flex: 1, gap: 3 },
-  rowLabel: { fontFamily: 'DMSans_500Medium', fontSize: 15, color: Colors.sepia },
-  rowSub: {
-    fontFamily: 'Lora_400Regular',
-    fontSize: 13,
-    color: Colors.sepia,
-    opacity: 0.6,
-    lineHeight: 18,
-  },
-  guideBtn: {
-    paddingVertical: Spacing.sm,
-  },
-  guideBtnPressed: { opacity: 0.5 },
-  guideBtnLabel: {
-    fontFamily: 'DMSans_500Medium',
-    fontSize: 15,
-    color: Colors.mustard,
-    letterSpacing: 0.2,
-  },
-  version: {
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 12,
-    color: Colors.sepia,
-    opacity: 0.35,
-    textAlign: 'center',
-    letterSpacing: 0.4,
-  },
-});
-
-const statStyles = StyleSheet.create({
-  card: {
-    width: '47%',
-    backgroundColor: Colors.paper2,
-    borderRadius: Radii.card,
-    padding: Spacing.md,
-    alignItems: 'center',
-    borderWidth: 1,
-    borderColor: Colors.line,
-    gap: 4,
-    ...Shadows.soft,
-  },
-  value: {
-    fontFamily: 'Jost_600SemiBold',
-    fontSize: 32,
-    color: Colors.sepia,
-    lineHeight: 38,
-  },
-  label: {
-    fontFamily: 'DMSans_400Regular',
-    fontSize: 11,
-    color: Colors.sepia,
-    opacity: 0.55,
-    letterSpacing: 0.4,
-  },
-});
