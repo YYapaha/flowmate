@@ -7,6 +7,7 @@ import { Radii, Shadows } from '../theme';
 import HomeScreen from '../screens/HomeScreen';
 import BodyDoublingScreen from '../screens/BodyDoublingScreen';
 import CalendarScreen from '../screens/CalendarScreen';
+import ArchiveScreen from '../screens/ArchiveScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GuideScreen from '../screens/GuideScreen';
 
@@ -51,6 +52,26 @@ function IconCalendar({ focused, colors }) {
           <View style={[styles.calDot, { backgroundColor: color }]} />
           <View style={[styles.calDot, { backgroundColor: color }]} />
           <View style={[styles.calDot, { backgroundColor: color }]} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
+function IconArchive({ focused, colors }) {
+  const color = focused ? colors.mustard : colors.sepia;
+  const op    = focused ? 1 : 0.45;
+  const bg    = focused ? colors.tagMustardBg : 'transparent';
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      {/* Boîte archive : couvercle + corps */}
+      <View style={{ alignItems: 'center', opacity: op }}>
+        {/* Couvercle */}
+        <View style={[styles.archiveLid, { borderColor: color, backgroundColor: focused ? color : 'transparent' }]} />
+        {/* Corps */}
+        <View style={[styles.archiveBody, { borderColor: color, backgroundColor: bg }]}>
+          {/* Trait horizontal intérieur */}
+          <View style={[styles.archiveLine, { backgroundColor: color }]} />
         </View>
       </View>
     </View>
@@ -107,6 +128,11 @@ function MainTabs() {
         name="Calendrier"
         component={CalendarScreen}
         options={{ tabBarIcon: ({ focused }) => <IconCalendar focused={focused} colors={colors} /> }}
+      />
+      <Tab.Screen
+        name="Archives"
+        component={ArchiveScreen}
+        options={{ tabBarIcon: ({ focused }) => <IconArchive focused={focused} colors={colors} /> }}
       />
       <Tab.Screen
         name="Profil"
@@ -172,6 +198,29 @@ const styles = StyleSheet.create({
     height: 14,
     borderRadius: Radii.btn,
     borderWidth: 2,
+  },
+  // Archive icon
+  archiveLid: {
+    width: 20,
+    height: 4,
+    borderRadius: 2,
+    borderWidth: 1.5,
+    marginBottom: 1,
+  },
+  archiveBody: {
+    width: 18,
+    height: 12,
+    borderRadius: 2,
+    borderWidth: 1.5,
+    overflow: 'hidden',
+    alignItems: 'center',
+    justifyContent: 'center',
+  },
+  archiveLine: {
+    width: 8,
+    height: 1.5,
+    borderRadius: 1,
+    opacity: 0.7,
   },
   calOuter: {
     width: 18,

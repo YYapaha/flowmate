@@ -29,7 +29,18 @@ function reducer(state, action) {
       return {
         ...state,
         thoughts: state.thoughts.map(t =>
-          t.id === action.id ? { ...t, archived: true } : t
+          t.id === action.id
+            ? { ...t, archived: true, archivedAt: action.archivedAt }
+            : t
+        ),
+      };
+    case 'UNARCHIVE':
+      return {
+        ...state,
+        thoughts: state.thoughts.map(t =>
+          t.id === action.id
+            ? { ...t, archived: false, archivedAt: null, updatedAt: action.updatedAt }
+            : t
         ),
       };
     case 'DELETE':
@@ -168,6 +179,7 @@ export function ThoughtProvider({ children }) {
       reminder: null,
       createdAt: new Date().toISOString(),
       archived: false,
+      archivedAt: null,
       steps: null,
     };
     dispatch({ type: 'ADD', payload: thought });
@@ -185,14 +197,18 @@ export function ThoughtProvider({ children }) {
       reminder: { hasDate: true, title: title.trim(), date, time: time || null, duration: 60 },
       createdAt: new Date().toISOString(),
       archived: false,
+      archivedAt: null,
       steps: null,
     };
     dispatch({ type: 'ADD', payload: thought });
     return thought.id;
   }, []);
 
-  const archiveThought = useCallback((id) => dispatch({ type: 'ARCHIVE', id }), []);
-  const deleteThought  = useCallback((id) => dispatch({ type: 'DELETE',  id }), []);
+  const archiveThought   = useCallback((id) =>
+    dispatch({ type: 'ARCHIVE',   id, archivedAt: new Date().toISOString() }), []);
+  const unarchiveThought = useCallback((id) =>
+    dispatch({ type: 'UNARCHIVE', id, updatedAt:  new Date().toISOString() }), []);
+  const deleteThought    = useCallback((id) => dispatch({ type: 'DELETE', id }), []);
   const updateTag      = useCallback((id, tag)   => dispatch({ type: 'UPDATE_TAG',      id, tag }),   []);
   const updateSteps    = useCallback((id, steps)  => dispatch({ type: 'UPDATE_STEPS',    id, steps }), []);
   const updateReminder = useCallback((id, reminder) => dispatch({ type: 'UPDATE_REMINDER', id, reminder }), []);
@@ -206,6 +222,7 @@ export function ThoughtProvider({ children }) {
         addThought,
         addManualReminder,
         archiveThought,
+        unarchiveThought,
         deleteThought,
         updateTag,
         updateSteps,
