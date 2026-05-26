@@ -2,7 +2,7 @@ import { useEffect, useRef } from 'react';
 import { Platform } from 'react-native';
 import { Accelerometer } from 'expo-sensors';
 
-const SHAKE_THRESHOLD = 2.5;
+const SHAKE_THRESHOLD = 2.8;
 const COOLDOWN_MS = 1200;
 
 export function useShake(onShake) {

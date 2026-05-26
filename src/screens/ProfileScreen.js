@@ -1,11 +1,13 @@
 import { useState } from 'react';
-import { View, Text, StyleSheet, Switch } from 'react-native';
+import { View, Text, StyleSheet, Switch, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useThoughts } from '../hooks/useThoughts';
 import { Colors, Radii, Shadows, Spacing } from '../theme';
+import appConfig from '../../app.json';
 
 const STORM_KEY = '@flowmate:stormMode';
+const APP_VERSION = appConfig.expo.version;
 
 function StatCard({ label, value }) {
   return (
@@ -16,13 +18,14 @@ function StatCard({ label, value }) {
   );
 }
 
-export default function ProfileScreen() {
+export default function ProfileScreen({ navigation }) {
   const { thoughts } = useThoughts();
   const [stormMode, setStormMode] = useState(false);
 
-  const total    = thoughts.length;
-  const archived = thoughts.filter(t => t.archived).length;
-  const active   = total - archived;
+  const total      = thoughts.length;
+  const archived   = thoughts.filter(t => t.archived).length;
+  const active     = total - archived;
+  const decomposed = thoughts.filter(t => t.steps && t.steps.length > 0).length;
 
   const toggleStorm = async (val) => {
     setStormMode(val);
@@ -31,13 +34,14 @@ export default function ProfileScreen() {
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
-      <View style={styles.inner}>
+      <ScrollView contentContainerStyle={styles.inner} showsVerticalScrollIndicator={false}>
         <Text style={styles.title}>Profil</Text>
 
-        <View style={styles.statsRow}>
-          <StatCard label="Capturées" value={total} />
-          <StatCard label="Rangées"   value={archived} />
-          <StatCard label="En attente" value={active} />
+        <View style={styles.statsGrid}>
+          <StatCard label="Capturées"   value={total}      />
+          <StatCard label="Rangées"     value={archived}   />
+          <StatCard label="En attente"  value={active}     />
+          <StatCard label="Décomposées" value={decomposed} />
         </View>
 
         <View style={styles.section}>
@@ -57,14 +61,26 @@ export default function ProfileScreen() {
             />
           </View>
         </View>
-      </View>
+
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Aide</Text>
+          <Pressable
+            style={({ pressed }) => [styles.guideBtn, pressed && styles.guideBtnPressed]}
+            onPress={() => navigation.navigate('Guide')}
+          >
+            <Text style={styles.guideBtnLabel}>Guide d'utilisation →</Text>
+          </Pressable>
+        </View>
+
+        <Text style={styles.version}>Flowmate v{APP_VERSION}</Text>
+      </ScrollView>
     </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
   container: { flex: 1, backgroundColor: Colors.paper },
-  inner: { flex: 1, padding: Spacing.lg, gap: 28 },
+  inner: { padding: Spacing.lg, gap: 24, paddingBottom: 40 },
   title: {
     fontFamily: 'Jost_600SemiBold',
     fontSize: 28,
@@ -73,7 +89,11 @@ const styles = StyleSheet.create({
     color: Colors.sepia,
     marginTop: Spacing.sm,
   },
-  statsRow: { flexDirection: 'row', gap: 12 },
+  statsGrid: {
+    flexDirection: 'row',
+    flexWrap: 'wrap',
+    gap: 12,
+  },
   section: {
     backgroundColor: Colors.paper2,
     borderRadius: Radii.card,
@@ -101,11 +121,29 @@ const styles = StyleSheet.create({
     opacity: 0.6,
     lineHeight: 18,
   },
+  guideBtn: {
+    paddingVertical: Spacing.sm,
+  },
+  guideBtnPressed: { opacity: 0.5 },
+  guideBtnLabel: {
+    fontFamily: 'DMSans_500Medium',
+    fontSize: 15,
+    color: Colors.mustard,
+    letterSpacing: 0.2,
+  },
+  version: {
+    fontFamily: 'DMSans_400Regular',
+    fontSize: 12,
+    color: Colors.sepia,
+    opacity: 0.35,
+    textAlign: 'center',
+    letterSpacing: 0.4,
+  },
 });
 
 const statStyles = StyleSheet.create({
   card: {
-    flex: 1,
+    width: '47%',
     backgroundColor: Colors.paper2,
     borderRadius: Radii.card,
     padding: Spacing.md,

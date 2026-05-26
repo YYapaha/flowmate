@@ -1,14 +1,16 @@
 import { NavigationContainer } from '@react-navigation/native';
 import { createBottomTabNavigator } from '@react-navigation/bottom-tabs';
+import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { View, StyleSheet } from 'react-native';
 import { Colors, Radii, Shadows } from '../theme';
 import HomeScreen from '../screens/HomeScreen';
 import BodyDoublingScreen from '../screens/BodyDoublingScreen';
 import ProfileScreen from '../screens/ProfileScreen';
+import GuideScreen from '../screens/GuideScreen';
 
 const Tab = createBottomTabNavigator();
+const Stack = createNativeStackNavigator();
 
-// Minimal SVG-style tab icons rendered as RN views
 function IconHome({ focused }) {
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
@@ -33,35 +35,48 @@ function IconProfile({ focused }) {
   );
 }
 
+function MainTabs() {
+  return (
+    <Tab.Navigator
+      screenOptions={{
+        headerShown: false,
+        tabBarStyle: styles.tabBar,
+        tabBarShowLabel: true,
+        tabBarLabelStyle: styles.tabLabel,
+        tabBarActiveTintColor: Colors.mustard,
+        tabBarInactiveTintColor: Colors.sepia,
+      }}
+    >
+      <Tab.Screen
+        name="Accueil"
+        component={HomeScreen}
+        options={{ tabBarIcon: ({ focused }) => <IconHome focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Focus"
+        component={BodyDoublingScreen}
+        options={{ tabBarIcon: ({ focused }) => <IconBody focused={focused} /> }}
+      />
+      <Tab.Screen
+        name="Profil"
+        component={ProfileScreen}
+        options={{ tabBarIcon: ({ focused }) => <IconProfile focused={focused} /> }}
+      />
+    </Tab.Navigator>
+  );
+}
+
 export default function AppNavigator() {
   return (
     <NavigationContainer>
-      <Tab.Navigator
-        screenOptions={{
-          headerShown: false,
-          tabBarStyle: styles.tabBar,
-          tabBarShowLabel: true,
-          tabBarLabelStyle: styles.tabLabel,
-          tabBarActiveTintColor: Colors.mustard,
-          tabBarInactiveTintColor: Colors.sepia,
-        }}
-      >
-        <Tab.Screen
-          name="Accueil"
-          component={HomeScreen}
-          options={{ tabBarIcon: ({ focused }) => <IconHome focused={focused} /> }}
+      <Stack.Navigator screenOptions={{ headerShown: false }}>
+        <Stack.Screen name="Main" component={MainTabs} />
+        <Stack.Screen
+          name="Guide"
+          component={GuideScreen}
+          options={{ presentation: 'modal' }}
         />
-        <Tab.Screen
-          name="Focus"
-          component={BodyDoublingScreen}
-          options={{ tabBarIcon: ({ focused }) => <IconBody focused={focused} /> }}
-        />
-        <Tab.Screen
-          name="Profil"
-          component={ProfileScreen}
-          options={{ tabBarIcon: ({ focused }) => <IconProfile focused={focused} /> }}
-        />
-      </Tab.Navigator>
+      </Stack.Navigator>
     </NavigationContainer>
   );
 }

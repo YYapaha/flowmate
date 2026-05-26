@@ -15,10 +15,14 @@ import { StepItem } from './StepItem';
 import { Colors, Radii, Shadows, Spacing } from '../theme';
 import { formatRelativeTime } from '../utils/date';
 import { decomposeThought } from '../services/api';
+import { useThoughts } from '../hooks/useThoughts';
 
 const SWIPE_THRESHOLD = -90;
 
 export function Card({ thought, onArchive, onUpdateSteps }) {
+  const { classifyingIds } = useThoughts();
+  const isClassifying = classifyingIds?.has(thought.id) ?? false;
+
   const [expanded, setExpanded] = useState(false);
   const [decomposing, setDecomposing] = useState(false);
   const [steps, setSteps] = useState(
@@ -42,7 +46,7 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
       setSteps(newSteps);
       onUpdateSteps?.(thought.id, newSteps);
     } catch {
-      // silent fail
+      // silent fail — decompose is non-critical
     } finally {
       setDecomposing(false);
     }
@@ -92,6 +96,9 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
         <View style={styles.header}>
           <View style={styles.headerLeft}>
             <Tag label={thought.tag} />
+            {isClassifying && (
+              <ActivityIndicator size="small" color={Colors.sepia} style={styles.spinner} />
+            )}
             <Text style={styles.time}>{formatRelativeTime(thought.createdAt)}</Text>
           </View>
           <KebabMenu
@@ -124,10 +131,9 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
         {/* Décomposer button — only for tâche */}
         {isTache && !steps && (
           <Pressable onPress={handleDecompose} style={styles.decomposeBtn} disabled={decomposing}>
-            {decomposing
-              ? <ActivityIndicator size="small" color={Colors.mustard} />
-              : <Text style={styles.decomposeBtnLabel}>Décomposer →</Text>
-            }
+            <Text style={[styles.decomposeBtnLabel, decomposing && styles.decomposeBtnDisabled]}>
+              {decomposing ? 'Génération des étapes…' : 'Décomposer →'}
+            </Text>
           </Pressable>
         )}
       </Animated.View>
@@ -154,8 +160,11 @@ const styles = StyleSheet.create({
   headerLeft: {
     flexDirection: 'row',
     alignItems: 'center',
-    gap: 10,
+    gap: 8,
     flex: 1,
+  },
+  spinner: {
+    opacity: 0.4,
   },
   time: {
     fontFamily: 'DMSans_400Regular',
@@ -197,5 +206,8 @@ const styles = StyleSheet.create({
     fontSize: 13,
     color: Colors.mustard,
     letterSpacing: 0.3,
+  },
+  decomposeBtnDisabled: {
+    opacity: 0.5,
   },
 });
