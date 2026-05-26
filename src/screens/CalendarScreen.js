@@ -121,7 +121,7 @@ export default function CalendarScreen() {
     const marks = {};
     thoughts.forEach(t => {
       const date = t.reminder?.date;
-      if (!t.reminder?.hasDate || !date) return;
+      if (t.archived || !t.reminder?.hasDate || !date) return;
       marks[date] = { ...marks[date], marked: true, dotColor: colors.mustard };
     });
     if (selectedDay) {
