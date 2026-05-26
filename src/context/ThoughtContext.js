@@ -66,6 +66,21 @@ function reducer(state, action) {
           t.id === action.id ? { ...t, reminder: action.reminder } : t
         ),
       };
+    case 'EDIT_REMINDER':
+      return {
+        ...state,
+        thoughts: state.thoughts.map(t =>
+          t.id === action.id
+            ? {
+                ...t,
+                reminder: action.reminder,
+                // Pour les rappels manuels, on synchronise aussi le texte affiché
+                ...(action.text !== undefined ? { text: action.text } : {}),
+                updatedAt: action.updatedAt,
+              }
+            : t
+        ),
+      };
     default:
       return state;
   }
@@ -198,6 +213,7 @@ export function ThoughtProvider({ children }) {
       createdAt: new Date().toISOString(),
       archived: false,
       archivedAt: null,
+      isManualReminder: true,
       steps: null,
     };
     dispatch({ type: 'ADD', payload: thought });
@@ -213,6 +229,29 @@ export function ThoughtProvider({ children }) {
   const updateSteps    = useCallback((id, steps)  => dispatch({ type: 'UPDATE_STEPS',    id, steps }), []);
   const updateReminder = useCallback((id, reminder) => dispatch({ type: 'UPDATE_REMINDER', id, reminder }), []);
 
+  /**
+   * Modifie le rappel d'une pensée (et son texte si le rappel est manuel).
+   * @param {string} id
+   * @param {{ title, date, time, duration }} newReminder
+   * @param {string|undefined} newText — transmis uniquement pour les rappels manuels
+   */
+  const editReminder = useCallback((id, newReminder, newText) => {
+    dispatch({
+      type: 'EDIT_REMINDER',
+      id,
+      reminder: { hasDate: true, ...newReminder },
+      text: newText,
+      updatedAt: new Date().toISOString(),
+    });
+  }, []);
+
+  /**
+   * Supprime uniquement le champ reminder d'une pensée non-manuelle
+   * (la pensée reste dans le flux principal).
+   */
+  const clearReminder = useCallback((id) =>
+    dispatch({ type: 'UPDATE_REMINDER', id, reminder: null }), []);
+
   return (
     <ThoughtContext.Provider
       value={{
@@ -227,6 +266,8 @@ export function ThoughtProvider({ children }) {
         updateTag,
         updateSteps,
         updateReminder,
+        editReminder,
+        clearReminder,
       }}
     >
       {children}
