@@ -52,6 +52,10 @@ Exemples :
 - "ne pas oublier d'acheter du pain" → rappel`;
 
 module.exports = async function handler(req, res) {
+  console.log('🔍 [classify] Function called');
+  console.log('🔑 [classify] OPENAI_API_KEY exists:', !!process.env.OPENAI_API_KEY);
+  console.log('🔑 [classify] OPENAI_API_KEY first 5 chars:', process.env.OPENAI_API_KEY ? process.env.OPENAI_API_KEY.substring(0, 5) : 'missing');
+
   if (handleCors(req, res)) return;
   if (req.method !== 'POST') return res.status(405).json({ error: 'Method not allowed' });
 
