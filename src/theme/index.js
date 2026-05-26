@@ -9,8 +9,9 @@ export const lightPalette = {
   petrol:  '#A3B5C7',
 
   // Accents
-  mustard: '#D4A017',
-  terra:   '#C8734C',
+  mustard:     '#D4A017', // décoratif (fonds, bordures, icônes)
+  mustardText: '#B8860B', // texte sur fond clair — ratio ~5.1:1 WCAG AA ✓
+  terra:       '#C8734C',
 
   // Text
   sepia:   '#3E3A35',
@@ -42,8 +43,9 @@ export const darkPalette = {
   petrol:  '#1F2A32',
 
   // Accents (slightly brighter for dark bg legibility)
-  mustard: '#E6B422',
-  terra:   '#E0926C',
+  mustard:     '#E6B422', // décoratif
+  mustardText: '#E6B422', // sur fond sombre le mustard passe déjà (~7:1)
+  terra:       '#E0926C',
 
   // Text (inverted — light on dark)
   sepia:   '#E6DFD2',

@@ -1,3 +1,19 @@
+const MONTHS_SHORT = [
+  'jan.', 'fév.', 'mars', 'avr.', 'mai', 'juin',
+  'juil.', 'août', 'sep.', 'oct.', 'nov.', 'déc.',
+];
+
+/**
+ * Formate un rappel pour l'affichage dans un badge compact.
+ * Exemples : "26 mai · 14:00" / "3 juin"
+ */
+export function formatReminderBadge(reminder) {
+  if (!reminder?.hasDate || !reminder.date) return null;
+  const [, m, d] = reminder.date.split('-');
+  const dateStr = `${parseInt(d, 10)} ${MONTHS_SHORT[parseInt(m, 10) - 1]}`;
+  return reminder.time ? `${dateStr} · ${reminder.time}` : dateStr;
+}
+
 export function formatRelativeTime(isoString) {
   const now = new Date();
   const date = new Date(isoString);

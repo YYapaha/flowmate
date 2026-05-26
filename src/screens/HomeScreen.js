@@ -76,6 +76,11 @@ export default function HomeScreen() {
           ? 'Rien pour l\'instant.'
           : `${active.length} pensée${active.length > 1 ? 's' : ''}${archived.length > 0 ? ` · ${archived.length} rangée${archived.length > 1 ? 's' : ''}` : ''}`}
       </Text>
+      {briefVisible && (
+        <View style={styles.briefWrap}>
+          <BriefCard brief={brief} onDismiss={dismissBrief} />
+        </View>
+      )}
       {thoughts.length > 0 && (
         <View style={styles.progressWrap}>
           <ProgressBar
@@ -83,11 +88,6 @@ export default function HomeScreen() {
             label="Rangées"
             valueLabel={`${archived.length} / ${thoughts.length}`}
           />
-        </View>
-      )}
-      {briefVisible && (
-        <View style={styles.briefWrap}>
-          <BriefCard brief={brief} onDismiss={dismissBrief} />
         </View>
       )}
     </View>

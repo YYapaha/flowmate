@@ -72,7 +72,7 @@ function makeMenuStyles(colors) {
 
 function ThreeDots({ color }) {
   return (
-    <View style={{ alignItems: 'center', gap: 3, padding: 6 }}>
+    <View style={{ alignItems: 'center', gap: 3, padding: 12, minWidth: 44, minHeight: 44, justifyContent: 'center' }}>
       <View style={{ width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: color, opacity: 0.45 }} />
       <View style={{ width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: color, opacity: 0.45 }} />
       <View style={{ width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: color, opacity: 0.45 }} />
@@ -116,7 +116,7 @@ function makeCardStyles(colors) {
     time: {
       fontFamily: 'DMSans_500Medium',
       fontSize: 17,
-      color: colors.mustard,
+      color: colors.mustardText,
       letterSpacing: 0.3,
     },
     timeSep: {

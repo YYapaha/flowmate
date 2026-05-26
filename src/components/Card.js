@@ -14,7 +14,7 @@ import { Tag } from './Tag';
 import { KebabMenu } from './KebabMenu';
 import { StepItem } from './StepItem';
 import { Radii, Shadows, Spacing } from '../theme';
-import { formatRelativeTime } from '../utils/date';
+import { formatRelativeTime, formatReminderBadge } from '../utils/date';
 import { decomposeThought } from '../services/api';
 import { useThoughts } from '../hooks/useThoughts';
 
@@ -108,8 +108,8 @@ function makeStyles(colors) {
 }
 
 function ReminderBadge({ reminder, styles }) {
-  if (!reminder?.hasDate) return null;
-  const label = reminder.time ? `${reminder.date} ${reminder.time}` : reminder.date;
+  const label = formatReminderBadge(reminder);
+  if (!label) return null;
   return (
     <View style={styles.badgeWrap}>
       <Text style={styles.badgeIcon}>📅</Text>

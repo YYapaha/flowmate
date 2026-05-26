@@ -1,13 +1,11 @@
-import { useMemo, useState } from 'react';
-import { View, Text, StyleSheet, Switch, Pressable, ScrollView } from 'react-native';
+import { useMemo } from 'react';
+import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import AsyncStorage from '@react-native-async-storage/async-storage';
 import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
 import { Radii, Shadows, Spacing } from '../theme';
 import appConfig from '../../app.json';
 
-const STORM_KEY = '@flowmate:stormMode';
 const APP_VERSION = appConfig.expo.version;
 
 const THEME_OPTIONS = [
@@ -74,16 +72,6 @@ function makeStyles(colors) {
       opacity: 0.45,
       marginBottom: Spacing.md,
     },
-    row: { flexDirection: 'row', alignItems: 'center', gap: 14 },
-    rowText: { flex: 1, gap: 3 },
-    rowLabel: { fontFamily: 'DMSans_500Medium', fontSize: 15, color: colors.sepia },
-    rowSub: {
-      fontFamily: 'Lora_400Regular',
-      fontSize: 13,
-      color: colors.sepia,
-      opacity: 0.6,
-      lineHeight: 18,
-    },
     // Theme picker
     themeRow: { flexDirection: 'row', gap: 8, marginTop: 4 },
     themeBtn: {
@@ -132,17 +120,11 @@ export default function ProfileScreen({ navigation }) {
   const { colors, mode, setMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { thoughts } = useThoughts();
-  const [stormMode, setStormMode] = useState(false);
 
   const total      = thoughts.length;
   const archived   = thoughts.filter(t => t.archived).length;
   const active     = total - archived;
   const decomposed = thoughts.filter(t => t.steps && t.steps.length > 0).length;
-
-  const toggleStorm = async (val) => {
-    setStormMode(val);
-    try { await AsyncStorage.setItem(STORM_KEY, JSON.stringify(val)); } catch {}
-  };
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
@@ -183,25 +165,6 @@ export default function ProfileScreen({ navigation }) {
                 </Text>
               </Pressable>
             ))}
-          </View>
-        </View>
-
-        {/* Options */}
-        <View style={styles.section}>
-          <Text style={styles.sectionLabel}>Options</Text>
-          <View style={styles.row}>
-            <View style={styles.rowText}>
-              <Text style={styles.rowLabel}>Mode tempête</Text>
-              <Text style={styles.rowSub}>
-                {"Interface réduite à l'essentiel. Pour les jours où c'est trop."}
-              </Text>
-            </View>
-            <Switch
-              value={stormMode}
-              onValueChange={toggleStorm}
-              trackColor={{ false: colors.line, true: colors.mustard }}
-              thumbColor={colors.paper}
-            />
           </View>
         </View>
 
