@@ -5,11 +5,14 @@ import { View, StyleSheet } from 'react-native';
 import { Colors, Radii, Shadows } from '../theme';
 import HomeScreen from '../screens/HomeScreen';
 import BodyDoublingScreen from '../screens/BodyDoublingScreen';
+import CalendarScreen from '../screens/CalendarScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GuideScreen from '../screens/GuideScreen';
 
-const Tab = createBottomTabNavigator();
+const Tab   = createBottomTabNavigator();
 const Stack = createNativeStackNavigator();
+
+// ─── Tab icons (geometric, mid-century style) ─────────────────────────────
 
 function IconHome({ focused }) {
   return (
@@ -27,6 +30,27 @@ function IconBody({ focused }) {
   );
 }
 
+function IconCalendar({ focused }) {
+  const color = focused ? Colors.mustard : Colors.sepia;
+  const op    = focused ? 1 : 0.45;
+  const bg    = focused ? Colors.tagMustardBg : 'transparent';
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      {/* Outer rectangle */}
+      <View style={[styles.calOuter, { borderColor: color, opacity: op, backgroundColor: bg }]}>
+        {/* Header bar */}
+        <View style={[styles.calHeader, { backgroundColor: color }]} />
+        {/* Grid dots */}
+        <View style={styles.calDots}>
+          <View style={[styles.calDot, { backgroundColor: color }]} />
+          <View style={[styles.calDot, { backgroundColor: color }]} />
+          <View style={[styles.calDot, { backgroundColor: color }]} />
+        </View>
+      </View>
+    </View>
+  );
+}
+
 function IconProfile({ focused }) {
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
@@ -34,6 +58,8 @@ function IconProfile({ focused }) {
     </View>
   );
 }
+
+// ─── Navigators ───────────────────────────────────────────────────────────
 
 function MainTabs() {
   return (
@@ -58,6 +84,11 @@ function MainTabs() {
         options={{ tabBarIcon: ({ focused }) => <IconBody focused={focused} /> }}
       />
       <Tab.Screen
+        name="Calendrier"
+        component={CalendarScreen}
+        options={{ tabBarIcon: ({ focused }) => <IconCalendar focused={focused} /> }}
+      />
+      <Tab.Screen
         name="Profil"
         component={ProfileScreen}
         options={{ tabBarIcon: ({ focused }) => <IconProfile focused={focused} /> }}
@@ -80,6 +111,8 @@ export default function AppNavigator() {
     </NavigationContainer>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────
 
 const styles = StyleSheet.create({
   tabBar: {
@@ -142,5 +175,29 @@ const styles = StyleSheet.create({
     borderColor: Colors.mustard,
     backgroundColor: Colors.tagMustardBg,
     opacity: 1,
+  },
+  // Calendar icon parts
+  calOuter: {
+    width: 18,
+    height: 17,
+    borderRadius: 3,
+    borderWidth: 1.5,
+    overflow: 'hidden',
+  },
+  calHeader: {
+    height: 5,
+    width: '100%',
+  },
+  calDots: {
+    flexDirection: 'row',
+    justifyContent: 'space-around',
+    paddingHorizontal: 2,
+    paddingTop: 3,
+  },
+  calDot: {
+    width: 3,
+    height: 3,
+    borderRadius: 1.5,
+    opacity: 0.8,
   },
 });

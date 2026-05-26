@@ -19,6 +19,18 @@ import { useThoughts } from '../hooks/useThoughts';
 
 const SWIPE_THRESHOLD = -90;
 
+/** Petit badge calendrier affiché quand une pensée a un rappel daté. */
+function ReminderBadge({ reminder }) {
+  if (!reminder?.hasDate) return null;
+  const label = reminder.time ? `${reminder.date} ${reminder.time}` : reminder.date;
+  return (
+    <View style={badgeStyles.wrap}>
+      <Text style={badgeStyles.icon}>📅</Text>
+      <Text style={badgeStyles.label} numberOfLines={1}>{label}</Text>
+    </View>
+  );
+}
+
 export function Card({ thought, onArchive, onUpdateSteps }) {
   const { classifyingIds } = useThoughts();
   const isClassifying = classifyingIds?.has(thought.id) ?? false;
@@ -26,11 +38,13 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
   const [expanded, setExpanded] = useState(false);
   const [decomposing, setDecomposing] = useState(false);
   const [steps, setSteps] = useState(
-    thought.steps ? thought.steps.map(s => (typeof s === 'string' ? { label: s, done: false } : s)) : null
+    thought.steps
+      ? thought.steps.map(s => (typeof s === 'string' ? { label: s, done: false } : s))
+      : null
   );
 
-  const translateX = useSharedValue(0);
-  const cardOpacity = useSharedValue(1);
+  const translateX   = useSharedValue(0);
+  const cardOpacity  = useSharedValue(1);
 
   const doArchive = useCallback(() => {
     Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
@@ -46,7 +60,7 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
       setSteps(newSteps);
       onUpdateSteps?.(thought.id, newSteps);
     } catch {
-      // silent fail — decompose is non-critical
+      // silent fail
     } finally {
       setDecomposing(false);
     }
@@ -71,12 +85,12 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
     })
     .onEnd((e) => {
       if (e.translationX < SWIPE_THRESHOLD) {
-        translateX.value = withTiming(-600, { duration: 240 });
+        translateX.value  = withTiming(-600, { duration: 240 });
         cardOpacity.value = withTiming(0, { duration: 240 }, (finished) => {
           if (finished) runOnJS(doArchive)();
         });
       } else {
-        translateX.value = withSpring(0, { damping: 14, stiffness: 200 });
+        translateX.value  = withSpring(0, { damping: 14, stiffness: 200 });
         cardOpacity.value = withSpring(1);
       }
     });
@@ -86,7 +100,7 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
     opacity: cardOpacity.value,
   }));
 
-  const isLong = thought.text.length > 110;
+  const isLong  = thought.text.length > 110;
   const isTache = thought.tag === 'tâche';
 
   return (
@@ -107,12 +121,15 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
           />
         </View>
 
+        {/* Reminder badge */}
+        <ReminderBadge reminder={thought.reminder} />
+
         {/* Body */}
         <Text style={styles.body} numberOfLines={expanded ? undefined : 3}>
           {thought.text}
         </Text>
 
-        {/* Expand / collapse link */}
+        {/* Expand / collapse */}
         {isLong && (
           <Text style={styles.expandLink} onPress={() => setExpanded(v => !v)}>
             {expanded ? 'Réduire' : 'Développer'}
@@ -128,7 +145,7 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
           </View>
         )}
 
-        {/* Décomposer button — only for tâche */}
+        {/* Décomposer button */}
         {isTache && !steps && (
           <Pressable onPress={handleDecompose} style={styles.decomposeBtn} disabled={decomposing}>
             <Text style={[styles.decomposeBtnLabel, decomposing && styles.decomposeBtnDisabled]}>
@@ -140,6 +157,28 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
     </GestureDetector>
   );
 }
+
+// ─── Styles ───────────────────────────────────────────────────────────────────
+
+const badgeStyles = StyleSheet.create({
+  wrap: {
+    flexDirection: 'row',
+    alignItems: 'center',
+    gap: 4,
+    backgroundColor: Colors.tagMustardBg,
+    alignSelf: 'flex-start',
+    paddingHorizontal: 8,
+    paddingVertical: 3,
+    borderRadius: Radii.pill,
+  },
+  icon:  { fontSize: 11 },
+  label: {
+    fontFamily: 'DMSans_400Regular',
+    fontSize: 11,
+    color: Colors.tagMustardFg,
+    letterSpacing: 0.2,
+  },
+});
 
 const styles = StyleSheet.create({
   card: {
@@ -163,9 +202,7 @@ const styles = StyleSheet.create({
     gap: 8,
     flex: 1,
   },
-  spinner: {
-    opacity: 0.4,
-  },
+  spinner: { opacity: 0.4 },
   time: {
     fontFamily: 'DMSans_400Regular',
     fontSize: 11,
@@ -207,7 +244,5 @@ const styles = StyleSheet.create({
     color: Colors.mustard,
     letterSpacing: 0.3,
   },
-  decomposeBtnDisabled: {
-    opacity: 0.5,
-  },
+  decomposeBtnDisabled: { opacity: 0.5 },
 });

@@ -33,3 +33,8 @@ export async function decomposeThought(text) {
   const data = await post('/api/decompose', { text });
   return Array.isArray(data.steps) ? data.steps : [];
 }
+
+export async function extractDate(text) {
+  const data = await post('/api/extract-date', { text });
+  return data ?? { hasDate: false };
+}
