@@ -44,8 +44,8 @@ export default function HomeScreen() {
       <Text style={styles.title}>Pensées du jour</Text>
       <Text style={styles.sub}>
         {active.length === 0
-          ? 'Aucune pensée pour l\'instant.'
-          : `${active.length} pensée${active.length > 1 ? 's' : ''} en attente`}
+          ? 'Rien pour l\'instant.'
+          : `${active.length} pensée${active.length > 1 ? 's' : ''}${archived.length > 0 ? ` · ${archived.length} rangée${archived.length > 1 ? 's' : ''}` : ''}`}
       </Text>
       {thoughts.length > 0 && (
         <View style={styles.progressWrap}>
@@ -67,7 +67,7 @@ export default function HomeScreen() {
   const ListEmpty = (
     <View style={styles.empty}>
       <Text style={styles.emptyText}>
-        Secoue le téléphone ou appuie sur + pour capturer une pensée.
+        Secoue le téléphone ou touche + pour poser une pensée.
       </Text>
     </View>
   );

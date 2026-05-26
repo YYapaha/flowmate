@@ -56,7 +56,7 @@ export default function BodyDoublingScreen() {
           <ProgressBar
             value={progress}
             label={done ? 'Terminé' : running ? 'En cours' : 'En pause'}
-            valueLabel={`${Math.round(progress)} %`}
+            valueLabel={done ? '' : fmt(remaining)}
           />
         </View>
 
@@ -70,7 +70,9 @@ export default function BodyDoublingScreen() {
         <Text style={styles.hint}>
           {done
             ? 'Bien. Prends une pause.'
-            : 'Travaille en silence. L\'app attend.'}
+            : running
+              ? "L'app attend. Travaille."
+              : 'Reprends quand tu veux.'}
         </Text>
       </View>
     </SafeAreaView>

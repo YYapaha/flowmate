@@ -54,7 +54,7 @@ export default function GuideScreen({ navigation }) {
         showsVerticalScrollIndicator={false}
       >
         <Text style={styles.intro}>
-          {"Flowmate t'aide à externaliser tes pensées pour alléger ta charge mentale.\nVoici comment tirer le meilleur de l'application."}
+          {"Un endroit pour poser ce qui tourne dans ta tête.\nVoici comment ça marche."}
         </Text>
 
         {SECTIONS.map((s) => (

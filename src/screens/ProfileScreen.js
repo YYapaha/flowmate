@@ -40,7 +40,7 @@ export default function ProfileScreen({ navigation }) {
         <View style={styles.statsGrid}>
           <StatCard label="Capturées"   value={total}      />
           <StatCard label="Rangées"     value={archived}   />
-          <StatCard label="En attente"  value={active}     />
+          <StatCard label="À trier"     value={active}     />
           <StatCard label="Décomposées" value={decomposed} />
         </View>
 
@@ -50,7 +50,7 @@ export default function ProfileScreen({ navigation }) {
             <View style={styles.rowText}>
               <Text style={styles.rowLabel}>Mode tempête</Text>
               <Text style={styles.rowSub}>
-                Réduit l'interface au strict minimum lors des journées difficiles.
+                {"Interface réduite à l'essentiel. Pour les jours où c'est trop."}
               </Text>
             </View>
             <Switch

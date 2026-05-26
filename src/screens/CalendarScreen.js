@@ -97,9 +97,9 @@ export default function CalendarScreen() {
 
   const ListEmpty = (
     <View style={styles.empty}>
-      <Text style={styles.emptyText}>Aucun rappel ce jour-là.</Text>
+      <Text style={styles.emptyText}>Rien ce jour-là.</Text>
       <Text style={styles.emptyHint}>
-        Appuie sur + pour en ajouter un.
+        {"Touche + si tu veux noter quelque chose."}
       </Text>
     </View>
   );
