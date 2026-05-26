@@ -1,24 +1,11 @@
 import { useState, useMemo, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
-import { Calendar, LocaleConfig } from 'react-native-calendars';
+import { MonthCalendar } from '../components/MonthCalendar';
 import { useThoughts } from '../hooks/useThoughts';
 import { Card } from '../components/Card';
 import { AddReminderModal } from '../components/AddReminderModal';
-import { Colors, Radii, Shadows, Spacing } from '../theme';
-
-// ─── Localisation française du calendrier ──────────────────────────────────
-LocaleConfig.locales.fr = {
-  monthNames: [
-    'Janvier', 'Février', 'Mars', 'Avril', 'Mai', 'Juin',
-    'Juillet', 'Août', 'Septembre', 'Octobre', 'Novembre', 'Décembre',
-  ],
-  monthNamesShort: ['Janv.', 'Févr.', 'Mars', 'Avr.', 'Mai', 'Juin', 'Juil.', 'Août', 'Sept.', 'Oct.', 'Nov.', 'Déc.'],
-  dayNames: ['Dimanche', 'Lundi', 'Mardi', 'Mercredi', 'Jeudi', 'Vendredi', 'Samedi'],
-  dayNamesShort: ['Dim', 'Lun', 'Mar', 'Mer', 'Jeu', 'Ven', 'Sam'],
-  today: "Aujourd'hui",
-};
-LocaleConfig.defaultLocale = 'fr';
+import { Colors, Spacing } from '../theme';
 
 function todayISO() {
   return new Date().toISOString().slice(0, 10);
@@ -87,32 +74,10 @@ export default function CalendarScreen() {
 
   const ListHeader = (
     <View>
-      <Calendar
-        current={todayISO()}
-        onDayPress={handleDayPress}
+      <MonthCalendar
         markedDates={markedDates}
-        markingType="dot"
-        theme={{
-          backgroundColor: Colors.paper,
-          calendarBackground: Colors.paper,
-          textSectionTitleColor: Colors.sepia,
-          selectedDayBackgroundColor: Colors.mustard,
-          selectedDayTextColor: Colors.paper,
-          todayTextColor: Colors.mustard,
-          dayTextColor: Colors.sepia,
-          textDisabledColor: `${Colors.sepia}40`,
-          dotColor: Colors.mustard,
-          selectedDotColor: Colors.paper,
-          arrowColor: Colors.mustard,
-          monthTextColor: Colors.sepia,
-          textMonthFontFamily: 'Jost_600SemiBold',
-          textMonthFontSize: 17,
-          textDayFontFamily: 'DMSans_400Regular',
-          textDayFontSize: 14,
-          textDayHeaderFontFamily: 'DMSans_500Medium',
-          textDayHeaderFontSize: 11,
-        }}
-        style={styles.calendar}
+        selectedDay={selectedDay}
+        onDayPress={handleDayPress}
       />
 
       <View style={styles.dayHeader}>
@@ -183,13 +148,6 @@ const styles = StyleSheet.create({
     marginBottom: 4,
   },
   list: { paddingHorizontal: Spacing.md, paddingBottom: 100 },
-  calendar: {
-    borderRadius: Radii.card,
-    marginBottom: 4,
-    borderWidth: 1,
-    borderColor: Colors.line,
-    ...Shadows.soft,
-  },
   dayHeader: {
     flexDirection: 'row',
     alignItems: 'baseline',
