@@ -16,17 +16,18 @@ import { formatRelativeTime } from '../utils/date';
 function BureauCard({ thought, onGripLongPress, colors }) {
   const s = bureauStyles(colors);
 
-  const handleLongPress = useCallback(() => {
+  const handleGripPress = useCallback(() => {
     Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
     onGripLongPress(thought);
   }, [thought, onGripLongPress]);
 
   return (
     <View style={s.card}>
-      {/* Grip — long press to move to a drawer */}
+      {/* Grip — tap or long press to move to a drawer */}
       <Pressable
-        onLongPress={handleLongPress}
-        delayLongPress={350}
+        onPress={handleGripPress}
+        onLongPress={handleGripPress}
+        delayLongPress={400}
         hitSlop={12}
       >
         {({ pressed }) => (
