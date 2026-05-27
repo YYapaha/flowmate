@@ -8,6 +8,7 @@ import HomeScreen from '../screens/HomeScreen';
 import BodyDoublingScreen from '../screens/BodyDoublingScreen';
 import CalendarScreen from '../screens/CalendarScreen';
 import ArchiveScreen from '../screens/ArchiveScreen';
+import AtelierScreen from '../screens/AtelierScreen';
 import ProfileScreen from '../screens/ProfileScreen';
 import GuideScreen from '../screens/GuideScreen';
 
@@ -78,6 +79,37 @@ function IconArchive({ focused, colors }) {
   );
 }
 
+function IconAtelier({ focused, colors }) {
+  const color = focused ? colors.mustard : colors.sepia;
+  const op    = focused ? 1 : 0.45;
+  const bg    = focused ? colors.tagMustardBg : 'transparent';
+  return (
+    <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
+      <View style={{ alignItems: 'center', opacity: op, gap: 2 }}>
+        {/* Three drawer fronts stacked */}
+        {[8, 7, 6].map((w, i) => (
+          <View
+            key={i}
+            style={{
+              width: w * 2,
+              height: 4,
+              borderRadius: 1.5,
+              borderWidth: 1.5,
+              borderColor: color,
+              backgroundColor: i === 0 ? bg : 'transparent',
+              alignItems: 'center',
+              justifyContent: 'center',
+            }}
+          >
+            {/* Tiny handle dot */}
+            <View style={{ width: 3, height: 1.5, borderRadius: 1, backgroundColor: color, opacity: 0.7 }} />
+          </View>
+        ))}
+      </View>
+    </View>
+  );
+}
+
 function IconProfile({ focused, colors }) {
   return (
     <View style={[styles.iconWrap, focused && styles.iconWrapActive]}>
@@ -133,6 +165,11 @@ function MainTabs() {
         name="Archives"
         component={ArchiveScreen}
         options={{ tabBarIcon: ({ focused }) => <IconArchive focused={focused} colors={colors} /> }}
+      />
+      <Tab.Screen
+        name="Atelier"
+        component={AtelierScreen}
+        options={{ tabBarIcon: ({ focused }) => <IconAtelier focused={focused} colors={colors} /> }}
       />
       <Tab.Screen
         name="Profil"

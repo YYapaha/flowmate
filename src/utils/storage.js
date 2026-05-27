@@ -1,7 +1,8 @@
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 const THOUGHTS_KEY = '@flowmate:thoughts';
-const DRAFT_KEY = '@flowmate:draft';
+const DRAFT_KEY    = '@flowmate:draft';
+const DRAWERS_KEY  = '@flowmate:drawers';
 
 export async function loadThoughts() {
   try {
@@ -34,5 +35,22 @@ export async function saveDraft(text) {
     }
   } catch {
     // silent — draft is best-effort
+  }
+}
+
+export async function loadDrawers() {
+  try {
+    const raw = await AsyncStorage.getItem(DRAWERS_KEY);
+    return raw ? JSON.parse(raw) : null; // null → caller uses defaults
+  } catch {
+    return null;
+  }
+}
+
+export async function saveDrawers(drawers) {
+  try {
+    await AsyncStorage.setItem(DRAWERS_KEY, JSON.stringify(drawers));
+  } catch (e) {
+    console.error('saveDrawers failed:', e);
   }
 }
