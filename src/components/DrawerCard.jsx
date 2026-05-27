@@ -6,7 +6,7 @@ import Animated, {
   useSharedValue, useAnimatedStyle, withSpring,
 } from 'react-native-reanimated';
 import { useTheme } from '../context/ThemeContext';
-import { Radii, Spacing, Shadows } from '../theme';
+import { Radii, Spacing } from '../theme';
 import { formatRelativeTime } from '../utils/date';
 
 // ─── Tag → visual mapping (exported for RangerModal + DrawerModal) ────────────
@@ -268,12 +268,10 @@ function makeStyles(colors) {
       zIndex: -1,
     },
     animWrap: {
-      borderWidth: 1,
-      borderColor: colors.line,
-      borderTopWidth: 0,
       borderBottomLeftRadius: 20,
       borderBottomRightRadius: 20,
       backgroundColor: colors.paper,
+      overflow: 'hidden',
       marginTop: -8,
     },
     content: {
