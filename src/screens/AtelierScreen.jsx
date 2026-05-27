@@ -1,7 +1,8 @@
 import { useState, useCallback, useMemo } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Pressable,
 } from 'react-native';
+import * as Haptics from 'expo-haptics';
 import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
 import { Tag } from '../components/Tag';
@@ -12,26 +13,36 @@ import { Radii, Spacing, Shadows } from '../theme';
 import { formatRelativeTime } from '../utils/date';
 
 // ─── Bureau thought card ───────────────────────────────────────────────────────
-function BureauCard({ thought, onRanger, colors }) {
+function BureauCard({ thought, onGripLongPress, colors }) {
   const s = bureauStyles(colors);
+
+  const handleLongPress = useCallback(() => {
+    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
+    onGripLongPress(thought);
+  }, [thought, onGripLongPress]);
+
   return (
     <View style={s.card}>
-      {/* Grip dots */}
-      <View style={s.grip}>
-        {[...Array(6)].map((_, i) => (
-          <View key={i} style={[s.dot, { backgroundColor: colors.sepia }]} />
-        ))}
-      </View>
+      {/* Grip — long press to move to a drawer */}
+      <Pressable
+        onLongPress={handleLongPress}
+        delayLongPress={350}
+        hitSlop={12}
+      >
+        {({ pressed }) => (
+          <View style={[s.grip, { opacity: pressed ? 0.85 : 0.35 }]}>
+            {[...Array(6)].map((_, i) => (
+              <View key={i} style={[s.dot, { backgroundColor: colors.sepia }]} />
+            ))}
+          </View>
+        )}
+      </Pressable>
 
       <View style={s.body}>
         <Text style={s.text} numberOfLines={4}>{thought.text}</Text>
         <View style={s.footer}>
           <Tag label={thought.tag} />
           <Text style={s.time}>{formatRelativeTime(thought.createdAt)}</Text>
-          <TouchableOpacity style={s.rangerBtn} onPress={() => onRanger(thought)} activeOpacity={0.7}>
-            <Text style={s.rangerIcon}>⊞</Text>
-            <Text style={s.rangerText}>Ranger</Text>
-          </TouchableOpacity>
         </View>
       </View>
     </View>
@@ -150,7 +161,7 @@ export default function AtelierScreen() {
               <BureauCard
                 key={t.id}
                 thought={t}
-                onRanger={handleRanger}
+                onGripLongPress={handleRanger}
                 colors={colors}
               />
             ))
@@ -377,29 +388,6 @@ function bureauStyles(colors) {
       fontSize: 11,
       color: colors.sepia,
       opacity: 0.5,
-      flex: 1,
-    },
-    rangerBtn: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 5,
-      paddingHorizontal: 10,
-      paddingVertical: 5,
-      borderRadius: Radii.btn,
-      borderWidth: 1,
-      borderColor: colors.line2,
-      backgroundColor: colors.paper2,
-    },
-    rangerIcon: {
-      fontSize: 13,
-      color: colors.sepia,
-      opacity: 0.7,
-    },
-    rangerText: {
-      fontFamily: 'DMSans_500Medium',
-      fontSize: 12,
-      color: colors.sepia,
-      opacity: 0.8,
     },
   });
 }
