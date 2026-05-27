@@ -1,58 +1,59 @@
-import { useState, useCallback, useMemo } from 'react';
+import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
-  View, Text, ScrollView, TouchableOpacity, StyleSheet, SafeAreaView, Pressable,
+  View, Text, ScrollView, TouchableOpacity, StyleSheet,
+  SafeAreaView, Dimensions,
 } from 'react-native';
+import Animated, {
+  useSharedValue,
+  useAnimatedStyle,
+} from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
 import { Tag } from '../components/Tag';
+import { DraggableThoughtCard } from '../components/DraggableThoughtCard';
 import { DrawerCard } from '../components/DrawerCard';
 import { DrawerModal } from '../components/DrawerModal';
-import { RangerModal } from '../components/RangerModal';
-import { Radii, Spacing, Shadows } from '../theme';
-import { formatRelativeTime } from '../utils/date';
+import { Radii, Spacing } from '../theme';
 
-// ─── Bureau thought card ───────────────────────────────────────────────────────
-function BureauCard({ thought, onGripLongPress, colors }) {
-  const s = bureauStyles(colors);
+// Width of the floating drag card — matches bureau card width (screen − content padding)
+const SCREEN_W = Dimensions.get('window').width;
+const FLOAT_W  = SCREEN_W - Spacing.lg * 2 - 28; // 28 = bureau inner padding × 2
 
-  const handleGripPress = useCallback(() => {
-    Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium).catch(() => {});
-    onGripLongPress(thought);
-  }, [thought, onGripLongPress]);
+// ─── Floating drag card (rendered above everything) ───────────────────────────
+function FloatingCard({ thought, dragX, dragY, safeTop }) {
+  const { colors } = useTheme();
+  const s = useMemo(() => floatStyles(colors), [colors]);
+
+  const animStyle = useAnimatedStyle(() => ({
+    transform: [
+      { translateX: dragX.value - FLOAT_W / 2 },
+      // absoluteY is from screen top; subtract safe area to get position within SafeAreaView
+      { translateY: dragY.value - safeTop.value - 55 },
+      { scale: 1.05 },
+    ],
+  }));
 
   return (
-    <View style={s.card}>
-      {/* Grip — tap or long press to move to a drawer */}
-      <Pressable
-        onPress={handleGripPress}
-        onLongPress={handleGripPress}
-        delayLongPress={400}
-        hitSlop={12}
-      >
-        {({ pressed }) => (
-          <View style={[s.grip, { opacity: pressed ? 0.85 : 0.35 }]}>
-            {[...Array(6)].map((_, i) => (
-              <View key={i} style={[s.dot, { backgroundColor: colors.sepia }]} />
-            ))}
-          </View>
-        )}
-      </Pressable>
-
-      <View style={s.body}>
-        <Text style={s.text} numberOfLines={4}>{thought.text}</Text>
-        <View style={s.footer}>
-          <Tag label={thought.tag} />
-          <Text style={s.time}>{formatRelativeTime(thought.createdAt)}</Text>
-        </View>
+    <Animated.View style={[s.card, animStyle]} pointerEvents="none">
+      <View style={s.grip}>
+        {[...Array(6)].map((_, i) => (
+          <View key={i} style={[s.dot, { backgroundColor: colors.sepia }]} />
+        ))}
       </View>
-    </View>
+      <View style={{ flex: 1 }}>
+        <Text style={s.text} numberOfLines={3}>{thought.text}</Text>
+        <Tag label={thought.tag} />
+      </View>
+    </Animated.View>
   );
 }
 
 // ─── AtelierScreen ────────────────────────────────────────────────────────────
 export default function AtelierScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const {
     thoughts, drawers, loaded,
     createDrawer, updateDrawer, deleteDrawer,
@@ -61,12 +62,26 @@ export default function AtelierScreen() {
 
   const s = makeStyles(colors);
 
-  // ── State ──────────────────────────────────────────────────────────────────
-  const [openDrawerId,   setOpenDrawerId]   = useState(null);
-  const [drawerModal,    setDrawerModal]    = useState({ visible: false, drawer: null });
-  const [rangerModal,    setRangerModal]    = useState({ visible: false, thought: null });
+  // ── Drag state ────────────────────────────────────────────────────────────
+  // Shared values updated on UI thread during pan (smooth 60 fps animation)
+  const dragX = useSharedValue(0);
+  const dragY = useSharedValue(0);
+  // Safe area top offset for FloatingCard positioning
+  const safeTop = useSharedValue(insets.top);
+  useEffect(() => { safeTop.value = insets.top; }, [insets.top]);
 
-  // ── Derived data ───────────────────────────────────────────────────────────
+  // JS state: currently dragged thought (null = no drag in progress)
+  const [dragging, setDragging] = useState(null);
+  // JS state: drawer currently hovered by the drag finger
+  const [hoveredDrawerId, setHoveredDrawerId] = useState(null);
+
+  // Refs so stable callbacks can always access current values
+  const draggingRef        = useRef(null);
+  const drawerRefs         = useRef({});   // { drawerId: View ref }
+  const drawerLayoutsRef   = useRef({});   // { drawerId: { x, y, width, height } }
+  const bureauThoughtsRef  = useRef([]);
+
+  // ── Derived data ──────────────────────────────────────────────────────────
   const activeThoughts = useMemo(
     () => thoughts.filter(t => !t.archived),
     [thoughts],
@@ -77,6 +92,9 @@ export default function AtelierScreen() {
     [activeThoughts],
   );
 
+  // Keep ref in sync (used by stable drag handlers)
+  bureauThoughtsRef.current = bureauThoughts;
+
   const thoughtsByDrawer = useMemo(() => {
     const map = {};
     drawers.forEach(d => { map[d.id] = []; });
@@ -86,19 +104,20 @@ export default function AtelierScreen() {
     return map;
   }, [activeThoughts, drawers]);
 
-  // ── Handlers ───────────────────────────────────────────────────────────────
+  // ── Drawer grid helper ────────────────────────────────────────────────────
+  const drawerRows = useMemo(() => {
+    const rows = [];
+    for (let i = 0; i < drawers.length; i += 2) rows.push(drawers.slice(i, i + 2));
+    return rows;
+  }, [drawers]);
+
+  // ── Drawer state ──────────────────────────────────────────────────────────
+  const [openDrawerId, setOpenDrawerId]  = useState(null);
+  const [drawerModal,  setDrawerModal]   = useState({ visible: false, drawer: null });
+
   const handleToggleDrawer = useCallback((id) => {
     setOpenDrawerId(prev => (prev === id ? null : id));
   }, []);
-
-  const handleRanger = useCallback((thought) => {
-    setRangerModal({ visible: true, thought });
-  }, []);
-
-  const handleRangerSelect = useCallback((drawerId) => {
-    moveThoughtToDrawer(rangerModal.thought.id, drawerId);
-    setRangerModal({ visible: false, thought: null });
-  }, [rangerModal.thought, moveThoughtToDrawer]);
 
   const handleSaveDrawer = useCallback(({ name, tag }) => {
     if (drawerModal.drawer) {
@@ -114,12 +133,72 @@ export default function AtelierScreen() {
     if (openDrawerId === drawerId) setOpenDrawerId(null);
   }, [deleteDrawer, openDrawerId]);
 
-  // ── Two-column grid helper ─────────────────────────────────────────────────
-  const drawerRows = useMemo(() => {
-    const rows = [];
-    for (let i = 0; i < drawers.length; i += 2) rows.push(drawers.slice(i, i + 2));
-    return rows;
-  }, [drawers]);
+  // ── Drag handlers (stable — use refs internally) ──────────────────────────
+
+  // Called from DraggableThoughtCard gesture (via runOnJS) when long press fires.
+  // Measures all drawer positions, then activates the drag.
+  const handleDragStart = useCallback((thoughtId) => {
+    const thought = bureauThoughtsRef.current.find(t => t.id === thoughtId);
+    if (!thought) return;
+
+    const drawerIds = Object.keys(drawerRefs.current);
+    const layouts   = {};
+    let pending     = drawerIds.length;
+
+    const activate = () => {
+      drawerLayoutsRef.current = layouts;
+      draggingRef.current      = thought;
+      setDragging(thought);
+    };
+
+    if (pending === 0) { activate(); return; }
+
+    drawerIds.forEach(drawerId => {
+      const ref = drawerRefs.current[drawerId];
+      if (!ref) { if (--pending === 0) activate(); return; }
+      ref.measureInWindow((x, y, w, h) => {
+        layouts[drawerId] = { x, y, width: w, height: h };
+        if (--pending === 0) activate();
+      });
+    });
+  }, []);
+
+  // Called on every pan update — checks which drawer (if any) the finger is over.
+  const handleDragMove = useCallback((absX, absY) => {
+    const layouts = drawerLayoutsRef.current;
+    let hovered = null;
+    for (const [id, l] of Object.entries(layouts)) {
+      if (absX >= l.x && absX <= l.x + l.width &&
+          absY >= l.y && absY <= l.y + l.height) {
+        hovered = id;
+        break;
+      }
+    }
+    setHoveredDrawerId(prev => (prev === hovered ? prev : hovered));
+  }, []);
+
+  // Called when the finger is released.
+  const handleDragEnd = useCallback((absX, absY) => {
+    const thought = draggingRef.current;
+    if (thought) {
+      const layouts = drawerLayoutsRef.current;
+      let targetDrawerId = null;
+      for (const [id, l] of Object.entries(layouts)) {
+        if (absX >= l.x && absX <= l.x + l.width &&
+            absY >= l.y && absY <= l.y + l.height) {
+          targetDrawerId = id;
+          break;
+        }
+      }
+      if (targetDrawerId) {
+        moveThoughtToDrawer(thought.id, targetDrawerId);
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success).catch(() => {});
+      }
+    }
+    draggingRef.current = null;
+    setDragging(null);
+    setHoveredDrawerId(null);
+  }, [moveThoughtToDrawer]);
 
   if (!loaded) return null;
 
@@ -129,13 +208,14 @@ export default function AtelierScreen() {
         style={s.scroll}
         contentContainerStyle={s.content}
         showsVerticalScrollIndicator={false}
+        scrollEnabled={!dragging}
       >
         {/* ── Header ──────────────────────────────────────────────────── */}
         <View style={s.header}>
           <Text style={s.eyebrow}>Atelier</Text>
           <Text style={s.title}>Range tes pensées.</Text>
           <Text style={s.sub}>
-            Déplace une note du Bureau vers un tiroir. Ce qui reste ici y reste tant que tu veux.
+            Maintiens le grip d'une note et glisse-la dans un tiroir.
           </Text>
         </View>
 
@@ -159,11 +239,15 @@ export default function AtelierScreen() {
             </View>
           ) : (
             bureauThoughts.map(t => (
-              <BureauCard
+              <DraggableThoughtCard
                 key={t.id}
                 thought={t}
-                onGripLongPress={handleRanger}
-                colors={colors}
+                isDragging={dragging?.id === t.id}
+                dragX={dragX}
+                dragY={dragY}
+                onDragStart={handleDragStart}
+                onDragMove={handleDragMove}
+                onDragEnd={handleDragEnd}
               />
             ))
           )}
@@ -190,11 +274,19 @@ export default function AtelierScreen() {
           {drawerRows.map((row, rowIdx) => (
             <View key={rowIdx} style={s.drawerRow}>
               {row.map(drawer => (
-                <View key={drawer.id} style={s.drawerCell}>
+                <View
+                  key={drawer.id}
+                  style={s.drawerCell}
+                  ref={(r) => {
+                    if (r) drawerRefs.current[drawer.id] = r;
+                    else delete drawerRefs.current[drawer.id];
+                  }}
+                >
                   <DrawerCard
                     drawer={drawer}
                     thoughts={thoughtsByDrawer[drawer.id] ?? []}
                     isOpen={openDrawerId === drawer.id}
+                    isDropTarget={hoveredDrawerId === drawer.id}
                     onToggle={() => handleToggleDrawer(drawer.id)}
                     onEdit={() => setDrawerModal({ visible: true, drawer })}
                     onDelete={() => handleDeleteDrawer(drawer.id)}
@@ -202,22 +294,23 @@ export default function AtelierScreen() {
                   />
                 </View>
               ))}
-              {/* Placeholder if odd number of drawers */}
               {row.length === 1 && <View style={s.drawerCell} />}
             </View>
           ))}
         </View>
       </ScrollView>
 
-      {/* ── Modals ──────────────────────────────────────────────────────── */}
-      <RangerModal
-        visible={rangerModal.visible}
-        thought={rangerModal.thought}
-        drawers={drawers}
-        onSelect={handleRangerSelect}
-        onCancel={() => setRangerModal({ visible: false, thought: null })}
-      />
+      {/* ── Floating drag card (above everything, follows the finger) ── */}
+      {dragging && (
+        <FloatingCard
+          thought={dragging}
+          dragX={dragX}
+          dragY={dragY}
+          safeTop={safeTop}
+        />
+      )}
 
+      {/* ── Drawer edit modal ──────────────────────────────────────────── */}
       <DrawerModal
         visible={drawerModal.visible}
         drawer={drawerModal.drawer}
@@ -343,19 +436,29 @@ function makeStyles(colors) {
   });
 }
 
-// ─── Bureau card styles (separate fn for clarity) ─────────────────────────────
-function bureauStyles(colors) {
+// ─── FloatingCard styles ──────────────────────────────────────────────────────
+
+function floatStyles(colors) {
   return StyleSheet.create({
     card: {
+      position: 'absolute',
+      left: 0,
+      top: 0,
+      width: FLOAT_W,
       backgroundColor: colors.paper,
-      borderWidth: 1,
-      borderColor: colors.line,
+      borderWidth: 1.5,
+      borderColor: colors.mustard,
       borderRadius: Radii.card,
       padding: 14,
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 10,
-      ...Shadows.soft,
+      shadowColor: '#000',
+      shadowOffset: { width: 0, height: 8 },
+      shadowOpacity: 0.18,
+      shadowRadius: 20,
+      elevation: 12,
+      zIndex: 1000,
     },
     grip: {
       flexDirection: 'row',
@@ -363,32 +466,19 @@ function bureauStyles(colors) {
       width: 14,
       gap: 3,
       marginTop: 3,
-      opacity: 0.35,
+      opacity: 0.6,
     },
     dot: {
       width: 4,
       height: 4,
       borderRadius: 2,
     },
-    body: { flex: 1 },
     text: {
       fontFamily: 'Lora_400Regular',
       fontSize: 15,
       lineHeight: 22,
       color: colors.sepia,
-      marginBottom: 10,
-    },
-    footer: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 8,
-      flexWrap: 'wrap',
-    },
-    time: {
-      fontFamily: 'DMSans_400Regular',
-      fontSize: 11,
-      color: colors.sepia,
-      opacity: 0.5,
+      marginBottom: 8,
     },
   });
 }

@@ -5,8 +5,8 @@ import {
 import Animated, {
   useSharedValue, useAnimatedStyle, withSpring,
 } from 'react-native-reanimated';
+import { lightPalette, Radii, Spacing } from '../theme';
 import { useTheme } from '../context/ThemeContext';
-import { Radii, Spacing } from '../theme';
 import { formatRelativeTime } from '../utils/date';
 
 // ─── Tag → visual mapping (exported for RangerModal + DrawerModal) ────────────
@@ -55,7 +55,7 @@ function DrawerThoughtRow({ thought, colors, onMoveBack }) {
 }
 
 // ─── DrawerCard ───────────────────────────────────────────────────────────────
-export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelete, onMoveBack }) {
+export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelete, onMoveBack, isDropTarget = false }) {
   const { colors, isDark } = useTheme();
   const s = makeStyles(colors);
 
@@ -65,8 +65,9 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
 
   // ── Animation ──────────────────────────────────────────────────────────────
   const [measuredH, setMeasuredH] = useState(0);
-  const animH      = useSharedValue(0);
-  const chevronRot = useSharedValue(0);
+  const animH        = useSharedValue(0);
+  const chevronRot   = useSharedValue(0);
+  const highlightAnim = useSharedValue(0);
 
   useEffect(() => {
     if (isOpen && measuredH > 0) {
@@ -77,6 +78,10 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
       chevronRot.value = withSpring(0,   { damping: 22, stiffness: 200 });
     }
   }, [isOpen, measuredH]);
+
+  useEffect(() => {
+    highlightAnim.value = withSpring(isDropTarget ? 1 : 0, { damping: 20, stiffness: 300 });
+  }, [isDropTarget]);
 
   // When content changes while open (thought added/removed), update height
   useEffect(() => {
@@ -92,6 +97,10 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
 
   const chevronStyle = useAnimatedStyle(() => ({
     transform: [{ rotate: `${chevronRot.value}deg` }],
+  }));
+
+  const highlightStyle = useAnimatedStyle(() => ({
+    opacity: highlightAnim.value,
   }));
 
   // ── Kebab actions ──────────────────────────────────────────────────────────
@@ -147,6 +156,11 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
         onPress={onToggle}
         activeOpacity={0.85}
       >
+        {/* Drop-target highlight overlay */}
+        <Animated.View
+          style={[StyleSheet.absoluteFillObject, s.dropHighlight, highlightStyle]}
+          pointerEvents="none"
+        />
         {/* Handle bar */}
         <View style={[s.handle, { backgroundColor: colors.sepia }]} />
 
@@ -210,6 +224,13 @@ function makeStyles(colors) {
       paddingBottom: 18,
       borderWidth: 1,
       borderColor: colors.line2,
+      overflow: 'hidden',
+    },
+    dropHighlight: {
+      borderRadius: 20,
+      borderWidth: 2,
+      borderColor: lightPalette.mustard,
+      backgroundColor: 'rgba(212, 160, 23, 0.07)',
     },
     handle: {
       width: 44,
