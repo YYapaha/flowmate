@@ -167,7 +167,7 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
         <View style={s.faceInner}>
           <View style={{ flex: 1 }}>
             <Text style={[s.drawerLabel, { color: colors.sepia }]}>Tiroir</Text>
-            <Text style={[s.drawerName,  { color: colors.sepia }]}>{drawer.name}</Text>
+            <Text style={[s.drawerName, { color: colors.sepia }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{drawer.name}</Text>
           </View>
 
           <View style={s.faceRight}>

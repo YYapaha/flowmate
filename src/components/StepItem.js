@@ -7,9 +7,10 @@ function makeStyles(colors) {
   return StyleSheet.create({
     row: {
       flexDirection: 'row',
-      alignItems: 'flex-start',
+      alignItems: 'center',
       gap: Spacing.sm,
       paddingVertical: 4,
+      minHeight: 44,
     },
     box: {
       width: 18,

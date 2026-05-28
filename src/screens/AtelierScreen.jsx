@@ -1,7 +1,7 @@
 import { useState, useCallback, useMemo, useRef, useEffect } from 'react';
 import {
   View, Text, ScrollView, TouchableOpacity, StyleSheet,
-  SafeAreaView, Dimensions,
+  SafeAreaView, useWindowDimensions,
 } from 'react-native';
 import Animated, {
   useSharedValue,
@@ -17,18 +17,16 @@ import { DrawerCard } from '../components/DrawerCard';
 import { DrawerModal } from '../components/DrawerModal';
 import { Radii, Spacing, Shadows } from '../theme';
 
-// Width of the floating drag card — matches bureau card width (screen − content padding)
-const SCREEN_W = Dimensions.get('window').width;
-const FLOAT_W  = SCREEN_W - Spacing.lg * 2 - 28; // 28 = bureau inner padding × 2
-
 // ─── Floating drag card (rendered above everything) ───────────────────────────
 function FloatingCard({ thought, dragX, dragY, safeTop }) {
   const { colors } = useTheme();
-  const s = useMemo(() => floatStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const floatW = width - Spacing.lg * 2 - 28;
+  const s = useMemo(() => floatStyles(colors, width), [colors, width]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: dragX.value - FLOAT_W / 2 },
+      { translateX: dragX.value - floatW / 2 },
       // absoluteY is from screen top; subtract safe area to get position within SafeAreaView
       { translateY: dragY.value - safeTop.value - 55 },
       { scale: 1.05 },
@@ -213,7 +211,7 @@ export default function AtelierScreen() {
         {/* ── Header ──────────────────────────────────────────────────── */}
         <View style={s.header}>
           <Text style={s.eyebrow}>Atelier</Text>
-          <Text style={s.title}>Range tes pensées.</Text>
+          <Text style={s.title} numberOfLines={2} adjustsFontSizeToFit minimumFontScale={0.8}>Range tes pensées.</Text>
           <Text style={s.sub}>
             Maintiens le grip d'une note et glisse-la dans un tiroir.
           </Text>
@@ -438,13 +436,14 @@ function makeStyles(colors) {
 
 // ─── FloatingCard styles ──────────────────────────────────────────────────────
 
-function floatStyles(colors) {
+function floatStyles(colors, screenWidth) {
+  const floatW = screenWidth - Spacing.lg * 2 - 28;
   return StyleSheet.create({
     card: {
       position: 'absolute',
       left: 0,
       top: 0,
-      width: FLOAT_W,
+      width: floatW,
       backgroundColor: colors.paper,
       borderWidth: 1.5,
       borderColor: colors.mustard,

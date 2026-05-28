@@ -56,6 +56,7 @@ function makeStyles(colors) {
       paddingVertical: 10,
       paddingHorizontal: 2,
       minHeight: 100,
+      maxHeight: 160,
       lineHeight: 27,
     },
     inputFocused: {

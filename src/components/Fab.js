@@ -2,11 +2,13 @@ import { useEffect } from 'react';
 import { Pressable, StyleSheet } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring } from 'react-native-reanimated';
 import * as Haptics from 'expo-haptics';
+import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { Shadows } from '../theme';
 
 export function Fab({ onPress }) {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const scale = useSharedValue(0);
 
   useEffect(() => {
@@ -25,7 +27,7 @@ export function Fab({ onPress }) {
   return (
     <Animated.View style={[
       styles.fab,
-      { backgroundColor: colors.mustard },
+      { backgroundColor: colors.mustard, bottom: Math.max(24, insets.bottom + 16) },
       animStyle,
     ]}>
       <Pressable onPress={handlePress} style={styles.inner}>

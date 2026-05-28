@@ -177,6 +177,8 @@ function makeStyles(colors) {
       paddingVertical: 8,
       borderRadius: Radii.pill,
       borderWidth: 1.5,
+      minHeight: 44,
+      justifyContent: 'center',
     },
     tagChipText: {
       fontFamily: 'DMSans_500Medium',

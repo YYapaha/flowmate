@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Switch, useWindowDimensions } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
@@ -14,7 +14,7 @@ const THEME_OPTIONS = [
   { value: 'dark',   label: 'Sombre'  },
 ];
 
-function makeStyles(colors) {
+function makeStyles(colors, screenWidth) {
   return StyleSheet.create({
     container: { flex: 1, backgroundColor: colors.paper },
     inner: { padding: Spacing.lg, gap: 24, paddingBottom: 40 },
@@ -32,7 +32,7 @@ function makeStyles(colors) {
       gap: 12,
     },
     statCard: {
-      width: '47%',
+      width: screenWidth < 400 ? '100%' : '47%',
       backgroundColor: colors.paper2,
       borderRadius: Radii.card,
       padding: Spacing.md,
@@ -137,7 +137,8 @@ function makeStyles(colors) {
 
 export default function ProfileScreen({ navigation }) {
   const { colors, mode, setMode, stormMode, setStormMode } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const styles = useMemo(() => makeStyles(colors, width), [colors, width]);
   const { thoughts } = useThoughts();
 
   const total      = thoughts.length;

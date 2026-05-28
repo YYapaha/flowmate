@@ -1,6 +1,6 @@
 import { useMemo, useState, useCallback } from 'react';
 import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
-import { SafeAreaView } from 'react-native-safe-area-context';
+import { SafeAreaView, useSafeAreaInsets } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { MonthCalendar } from '../components/MonthCalendar';
 import { useThoughts } from '../hooks/useThoughts';
@@ -103,6 +103,7 @@ function makeStyles(colors) {
 
 export default function CalendarScreen() {
   const { colors } = useTheme();
+  const insets = useSafeAreaInsets();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const {
     thoughts,
@@ -226,7 +227,7 @@ export default function CalendarScreen() {
 
       {/* FAB — nouveau rappel */}
       <Pressable
-        style={({ pressed }) => [styles.fab, pressed && { opacity: 0.85 }]}
+        style={({ pressed }) => [styles.fab, { bottom: Math.max(28, insets.bottom + 12) }, pressed && { opacity: 0.85 }]}
         onPress={() => setAddVisible(true)}
       >
         <Text style={styles.fabLabel}>+</Text>

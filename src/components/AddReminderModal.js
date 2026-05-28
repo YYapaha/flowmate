@@ -1,7 +1,7 @@
 import { useMemo, useState, useEffect } from 'react';
 import {
   View, Text, TextInput, StyleSheet, Pressable,
-  Modal, KeyboardAvoidingView, Platform, ScrollView,
+  Modal, KeyboardAvoidingView, Platform, ScrollView, useWindowDimensions,
 } from 'react-native';
 import Animated, { useSharedValue, useAnimatedStyle, withSpring, withTiming } from 'react-native-reanimated';
 import { useTheme } from '../context/ThemeContext';
@@ -73,6 +73,7 @@ function makeStyles(colors) {
     },
     inputMultiline: {
       minHeight: 72,
+      maxHeight: 100,
       textAlignVertical: 'top',
       paddingTop: 10,
     },
@@ -131,6 +132,7 @@ function makeStyles(colors) {
 
 export function AddReminderModal({ visible, onClose, onSubmit }) {
   const { colors } = useTheme();
+  const { width } = useWindowDimensions();
   const styles = useMemo(() => makeStyles(colors), [colors]);
 
   const [title, setTitle]   = useState('');
@@ -212,8 +214,8 @@ export function AddReminderModal({ visible, onClose, onSubmit }) {
               />
             </Field>
 
-            <View style={styles.row}>
-              <View style={{ flex: 1.3 }}>
+            <View style={width >= 420 ? styles.row : null}>
+              <View style={width >= 420 ? { flex: 1.3 } : null}>
                 <Field label="Date *" error={errors.date} styles={styles}>
                   <TextInput
                     style={[styles.input, errors.date && styles.inputError]}
@@ -225,7 +227,7 @@ export function AddReminderModal({ visible, onClose, onSubmit }) {
                   />
                 </Field>
               </View>
-              <View style={{ flex: 1, marginLeft: 10 }}>
+              <View style={width >= 420 ? { flex: 1, marginLeft: 10 } : null}>
                 <Field label="Heure" error={errors.time} styles={styles}>
                   <TextInput
                     style={[styles.input, errors.time && styles.inputError]}

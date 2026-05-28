@@ -39,7 +39,7 @@ function makeStyles(colors) {
       color: colors.sepia,
       opacity: 0.45,
       textAlign: 'center',
-      maxWidth: 260,
+      maxWidth: '75%',
       lineHeight: 25,
     },
     stormWrap: {

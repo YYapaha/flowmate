@@ -43,7 +43,7 @@ function makeStyles(colors) {
       color: colors.sepia,
       opacity: 0.6,
       textAlign: 'center',
-      maxWidth: 280,
+      maxWidth: '80%',
       lineHeight: 22,
     },
   });

@@ -1,9 +1,9 @@
 import { useMemo, useState } from 'react';
-import { View, Text, TouchableOpacity, Modal, Pressable, StyleSheet } from 'react-native';
+import { View, Text, TouchableOpacity, Modal, Pressable, StyleSheet, useWindowDimensions } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { Radii, Shadows } from '../theme';
 
-function makeStyles(colors) {
+function makeStyles(colors, screenWidth) {
   return StyleSheet.create({
     trigger: { padding: 6, alignItems: 'center', gap: 3 },
     dot: { width: 3.5, height: 3.5, borderRadius: 2, backgroundColor: colors.sepia, opacity: 0.45 },
@@ -17,6 +17,7 @@ function makeStyles(colors) {
       backgroundColor: colors.paper,
       borderRadius: Radii.card,
       minWidth: 170,
+      maxWidth: screenWidth - 32,
       paddingVertical: 6,
       borderWidth: 1,
       borderColor: colors.line,
@@ -30,7 +31,8 @@ function makeStyles(colors) {
 
 export function KebabMenu({ onExpand, onArchive }) {
   const { colors } = useTheme();
-  const styles = useMemo(() => makeStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const styles = useMemo(() => makeStyles(colors, width), [colors, width]);
   const [open, setOpen] = useState(false);
 
   const action = (fn) => () => { setOpen(false); fn?.(); };

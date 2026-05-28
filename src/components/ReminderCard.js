@@ -6,7 +6,7 @@
 import { useMemo, useState, useCallback } from 'react';
 import {
   View, Text, StyleSheet, Alert, Pressable,
-  Modal, TouchableOpacity,
+  Modal, TouchableOpacity, useWindowDimensions,
 } from 'react-native';
 import { useTheme } from '../context/ThemeContext';
 import { Tag } from './Tag';
@@ -16,7 +16,8 @@ import { Radii, Shadows, Spacing } from '../theme';
 
 function ReminderMenu({ visible, onClose, onEdit, onDelete }) {
   const { colors } = useTheme();
-  const styles = useMemo(() => makeMenuStyles(colors), [colors]);
+  const { width } = useWindowDimensions();
+  const styles = useMemo(() => makeMenuStyles(colors, width), [colors, width]);
 
   return (
     <Modal
@@ -40,7 +41,7 @@ function ReminderMenu({ visible, onClose, onEdit, onDelete }) {
   );
 }
 
-function makeMenuStyles(colors) {
+function makeMenuStyles(colors, screenWidth) {
   return StyleSheet.create({
     backdrop: {
       flex: 1,
@@ -52,6 +53,7 @@ function makeMenuStyles(colors) {
       backgroundColor: colors.paper,
       borderRadius: Radii.card,
       minWidth: 180,
+      maxWidth: screenWidth - 32,
       paddingVertical: 6,
       borderWidth: 1,
       borderColor: colors.line,

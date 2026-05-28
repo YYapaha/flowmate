@@ -79,7 +79,7 @@ function ArchiveCard({ thought, onRestore, onDelete }) {
         <Pressable
           onPress={handleRestore}
           style={({ pressed }) => [styles.actionBtn, pressed && styles.actionPressed]}
-          hitSlop={8}
+          hitSlop={12}
         >
           <Text style={[styles.actionLabel, styles.restoreLabel]}>↩ Restaurer</Text>
         </Pressable>
@@ -87,7 +87,7 @@ function ArchiveCard({ thought, onRestore, onDelete }) {
         <Pressable
           onPress={handleDelete}
           style={({ pressed }) => [styles.actionBtn, pressed && styles.actionPressed]}
-          hitSlop={8}
+          hitSlop={12}
         >
           <Text style={[styles.actionLabel, styles.deleteLabel]}>Supprimer</Text>
         </Pressable>
@@ -206,7 +206,7 @@ function makeStyles(colors) {
       color: colors.sepia,
       opacity: 0.3,
       textAlign: 'center',
-      maxWidth: 240,
+      maxWidth: '70%',
       lineHeight: 20,
     },
   });
