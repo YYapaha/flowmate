@@ -222,7 +222,7 @@ export function EditReminderModal({ visible, thought, onClose, onSave }) {
     if (!title.trim()) e.title = 'Le titre est requis.';
     const dateParsed = parseLocalDate(dateRaw);
     if (!dateParsed) e.date = 'Format attendu : JJ/MM/AAAA';
-    if (timeRaw && !parseTime(timeRaw)) e.time = 'Format attendu : HH:MM ou HHhMM';
+    if (timeRaw && !parseTime(timeRaw)) e.time = 'Format attendu : HH:MM ou 14h';
     if (durRaw && !parseDuration(durRaw)) e.duration = 'Entrer un nombre de minutes (ex : 30)';
     setErrors(e);
     return Object.keys(e).length === 0 ? { dateParsed } : null;

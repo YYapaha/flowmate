@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { View, Text, StyleSheet, Pressable, ActivityIndicator } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ActivityIndicator, Alert } from 'react-native';
 import Animated, {
   useSharedValue,
   useAnimatedStyle,
@@ -149,7 +149,7 @@ export function Card({ thought, onArchive, onUpdateSteps }) {
       setSteps(newSteps);
       onUpdateSteps?.(thought.id, newSteps);
     } catch {
-      // silent fail
+      Alert.alert('Erreur', 'La décomposition a échoué, réessaie.');
     } finally {
       setDecomposing(false);
     }

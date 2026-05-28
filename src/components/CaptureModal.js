@@ -89,10 +89,14 @@ export function CaptureModal({ visible, onClose, onCapture }) {
     const trimmed = text.trim();
     if (!trimmed) return;
     await Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
-    await saveDraft('');
-    setText('');
-    onCapture(trimmed);
-    onClose();
+    try {
+      onCapture(trimmed);
+      await saveDraft('');
+      setText('');
+      onClose();
+    } catch {
+      // onCapture failed — brouillon conservé
+    }
   };
 
   const handleCancel = () => { onClose(); };

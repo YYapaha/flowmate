@@ -7,7 +7,7 @@ import { classifyThought, extractDate } from '../services/api';
 // ─── Tag normalisation ────────────────────────────────────────────────────────
 const KNOWN_TAGS = new Set([
   'tâche', 'idée', 'rendez-vous', 'émotion', 'rappel',
-  'routine', 'achat', 'santé', 'travail', 'autre',
+  'routine', 'achat', 'santé', 'travail', 'autre', 'en cours',
 ]);
 
 function normalizeTag(raw) {

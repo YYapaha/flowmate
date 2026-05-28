@@ -15,7 +15,7 @@ import { Tag } from '../components/Tag';
 import { DraggableThoughtCard } from '../components/DraggableThoughtCard';
 import { DrawerCard } from '../components/DrawerCard';
 import { DrawerModal } from '../components/DrawerModal';
-import { Radii, Spacing } from '../theme';
+import { Radii, Spacing, Shadows } from '../theme';
 
 // Width of the floating drag card — matches bureau card width (screen − content padding)
 const SCREEN_W = Dimensions.get('window').width;
@@ -394,7 +394,7 @@ function makeStyles(colors) {
 
     // Bureau
     bureau: {
-      borderRadius: 22,
+      borderRadius: Radii.card,
       borderWidth: 1,
       padding: 14,
       gap: 10,
@@ -453,11 +453,7 @@ function floatStyles(colors) {
       flexDirection: 'row',
       alignItems: 'flex-start',
       gap: 10,
-      shadowColor: '#000',
-      shadowOffset: { width: 0, height: 8 },
-      shadowOpacity: 0.18,
-      shadowRadius: 20,
-      elevation: 12,
+      ...Shadows.soft,
       zIndex: 1000,
     },
     grip: {

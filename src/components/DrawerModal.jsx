@@ -13,6 +13,7 @@ const TAG_OPTIONS = [
   { tag: 'santé',      label: 'Santé' },
   { tag: 'tâche',      label: 'Tâche' },
   { tag: 'rappel',     label: 'Rappel' },
+  { tag: 'rendez-vous', label: 'Rendez-vous' },
   { tag: 'émotion',    label: 'Émotion' },
   { tag: 'autre',      label: 'Autre' },
 ];
@@ -123,7 +124,7 @@ function makeStyles(colors) {
       borderTopRightRadius: 24,
       padding: Spacing.lg,
       paddingBottom: Spacing.xl,
-      ...Shadows.fab,
+      ...Shadows.soft,
     },
     grip: {
       width: 40,

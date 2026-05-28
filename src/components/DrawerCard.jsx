@@ -213,12 +213,12 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
 function makeStyles(colors) {
   return StyleSheet.create({
     wrap: {
-      borderRadius: 20,
+      borderRadius: Radii.card,
       overflow: 'visible',
       marginBottom: 0,
     },
     face: {
-      borderRadius: 20,
+      borderRadius: Radii.card,
       paddingTop: 28,
       paddingHorizontal: 18,
       paddingBottom: 18,
@@ -227,7 +227,7 @@ function makeStyles(colors) {
       overflow: 'hidden',
     },
     dropHighlight: {
-      borderRadius: 20,
+      borderRadius: Radii.card,
       borderWidth: 2,
       borderColor: lightPalette.mustard,
       backgroundColor: 'rgba(212, 160, 23, 0.07)',
@@ -323,7 +323,7 @@ function rowStyles(colors) {
       backgroundColor: colors.paper2,
       borderWidth: 1,
       borderColor: colors.line,
-      borderRadius: 14,
+      borderRadius: Radii.btn,
       padding: 12,
       flexDirection: 'row',
       alignItems: 'flex-start',
