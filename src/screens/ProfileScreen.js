@@ -1,5 +1,5 @@
 import { useMemo } from 'react';
-import { View, Text, StyleSheet, Pressable, ScrollView } from 'react-native';
+import { View, Text, StyleSheet, Pressable, ScrollView, Switch } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
@@ -96,6 +96,25 @@ function makeStyles(colors) {
       color: colors.mustard,
       opacity: 1,
     },
+    // Storm mode
+    stormRow: {
+      flexDirection: 'row',
+      alignItems: 'center',
+      justifyContent: 'space-between',
+      marginTop: Spacing.sm,
+    },
+    stormLabel: {
+      fontFamily: 'DMSans_500Medium',
+      fontSize: 15,
+      color: colors.sepia,
+    },
+    stormHint: {
+      fontFamily: 'Lora_400Regular_Italic',
+      fontSize: 12,
+      color: colors.sepia,
+      opacity: 0.5,
+      marginTop: 2,
+    },
     // Guide button
     guideBtn: { paddingVertical: Spacing.sm },
     guideBtnPressed: { opacity: 0.5 },
@@ -117,7 +136,7 @@ function makeStyles(colors) {
 }
 
 export default function ProfileScreen({ navigation }) {
-  const { colors, mode, setMode } = useTheme();
+  const { colors, mode, setMode, stormMode, setStormMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { thoughts } = useThoughts();
 
@@ -144,6 +163,23 @@ export default function ProfileScreen({ navigation }) {
               <Text style={styles.statLabel}>{label}</Text>
             </View>
           ))}
+        </View>
+
+        {/* Storm mode */}
+        <View style={styles.section}>
+          <Text style={styles.sectionLabel}>Focus</Text>
+          <View style={styles.stormRow}>
+            <View>
+              <Text style={styles.stormLabel}>⚡ Mode tempête</Text>
+              <Text style={styles.stormHint}>Cache tout, garde seulement la capture.</Text>
+            </View>
+            <Switch
+              value={stormMode}
+              onValueChange={setStormMode}
+              trackColor={{ false: colors.line2, true: colors.mustard }}
+              thumbColor={colors.paper}
+            />
+          </View>
         </View>
 
         {/* Appearance */}

@@ -1,5 +1,5 @@
 import { useMemo, useState, useCallback } from 'react';
-import { View, Text, FlatList, StyleSheet } from 'react-native';
+import { View, Text, FlatList, StyleSheet, Pressable } from 'react-native';
 import { SafeAreaView } from 'react-native-safe-area-context';
 import { useTheme } from '../context/ThemeContext';
 import { useThoughts } from '../hooks/useThoughts';
@@ -42,11 +42,42 @@ function makeStyles(colors) {
       maxWidth: 260,
       lineHeight: 25,
     },
+    stormWrap: {
+      flex: 1,
+      alignItems: 'center',
+      justifyContent: 'center',
+      gap: 24,
+      padding: Spacing.xl,
+    },
+    stormTitle: {
+      fontFamily: 'Jost_600SemiBold',
+      fontSize: 22,
+      color: colors.sepia,
+      textAlign: 'center',
+    },
+    stormHint: {
+      fontFamily: 'Lora_400Regular_Italic',
+      fontSize: 15,
+      color: colors.sepia,
+      opacity: 0.5,
+      textAlign: 'center',
+    },
+    stormBtn: {
+      backgroundColor: colors.mustard,
+      paddingHorizontal: 32,
+      paddingVertical: 14,
+      borderRadius: 12,
+    },
+    stormBtnLabel: {
+      fontFamily: 'DMSans_500Medium',
+      fontSize: 16,
+      color: colors.paper,
+    },
   });
 }
 
 export default function HomeScreen() {
-  const { colors } = useTheme();
+  const { colors, stormMode } = useTheme();
   const styles = useMemo(() => makeStyles(colors), [colors]);
   const { thoughts, addThought, archiveThought, updateSteps } = useThoughts();
   const [modalVisible, setModalVisible] = useState(false);
@@ -100,6 +131,30 @@ export default function HomeScreen() {
       </Text>
     </View>
   );
+
+  if (stormMode) {
+    return (
+      <SafeAreaView style={styles.container} edges={['top']}>
+        <View style={styles.stormWrap}>
+          <Text style={styles.stormTitle}>⚡ Mode tempête</Text>
+          <Text style={styles.stormHint}>
+            Pose tes pensées sans distraction.{'\n'}La liste t'attend après la tempête.
+          </Text>
+          <Pressable
+            style={({ pressed }) => [styles.stormBtn, pressed && { opacity: 0.8 }]}
+            onPress={openModal}
+          >
+            <Text style={styles.stormBtnLabel}>+ Capturer une pensée</Text>
+          </Pressable>
+        </View>
+        <CaptureModal
+          visible={modalVisible}
+          onClose={() => setModalVisible(false)}
+          onCapture={handleCapture}
+        />
+      </SafeAreaView>
+    );
+  }
 
   return (
     <SafeAreaView style={styles.container} edges={['top']}>
