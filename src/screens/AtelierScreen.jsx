@@ -18,17 +18,15 @@ import { DrawerModal } from '../components/DrawerModal';
 import { Radii, Spacing, Shadows } from '../theme';
 
 // ─── Floating drag card (rendered above everything) ───────────────────────────
-function FloatingCard({ thought, dragX, dragY, safeTop }) {
+function FloatingCard({ thought, dragX, dragY, safeTop, grabOffsetX, grabOffsetY }) {
   const { colors } = useTheme();
   const { width } = useWindowDimensions();
-  const floatW = width - Spacing.lg * 2 - 28;
   const s = useMemo(() => floatStyles(colors, width), [colors, width]);
 
   const animStyle = useAnimatedStyle(() => ({
     transform: [
-      { translateX: dragX.value - floatW / 2 },
-      // absoluteY is from screen top; subtract safe area to get position within SafeAreaView
-      { translateY: dragY.value - safeTop.value - 55 },
+      { translateX: dragX.value - grabOffsetX.value },
+      { translateY: dragY.value - safeTop.value - grabOffsetY.value },
       { scale: 1.05 },
     ],
   }));
@@ -64,6 +62,8 @@ export default function AtelierScreen() {
   // Shared values updated on UI thread during pan (smooth 60 fps animation)
   const dragX = useSharedValue(0);
   const dragY = useSharedValue(0);
+  const grabOffsetX = useSharedValue(0);
+  const grabOffsetY = useSharedValue(0);
   // Safe area top offset for FloatingCard positioning
   const safeTop = useSharedValue(insets.top);
   useEffect(() => { safeTop.value = insets.top; }, [insets.top]);
@@ -243,6 +243,8 @@ export default function AtelierScreen() {
                 isDragging={dragging?.id === t.id}
                 dragX={dragX}
                 dragY={dragY}
+                grabOffsetX={grabOffsetX}
+                grabOffsetY={grabOffsetY}
                 onDragStart={handleDragStart}
                 onDragMove={handleDragMove}
                 onDragEnd={handleDragEnd}
@@ -305,6 +307,8 @@ export default function AtelierScreen() {
           dragX={dragX}
           dragY={dragY}
           safeTop={safeTop}
+          grabOffsetX={grabOffsetX}
+          grabOffsetY={grabOffsetY}
         />
       )}
 

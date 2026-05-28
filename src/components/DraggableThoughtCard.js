@@ -17,6 +17,8 @@ export function DraggableThoughtCard({
   isDragging,
   dragX,
   dragY,
+  grabOffsetX,
+  grabOffsetY,
   onDragStart, // (thoughtId: string) => void
   onDragMove,  // (absX: number, absY: number) => void
   onDragEnd,   // (absX: number, absY: number) => void
@@ -46,6 +48,10 @@ export function DraggableThoughtCard({
     Gesture.Pan()
       .activateAfterLongPress(300)
       .onStart((e) => {
+        // e.x / e.y = finger position relative to this card's top-left corner
+        // Store as grab offset so FloatingCard stays under the same spot of the finger
+        grabOffsetX.value = e.x;
+        grabOffsetY.value = e.y;
         dragX.value = e.absoluteX;
         dragY.value = e.absoluteY;
         runOnJS(callHaptic)();
