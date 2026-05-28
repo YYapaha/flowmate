@@ -165,11 +165,11 @@ export function DrawerCard({ drawer, thoughts, isOpen, onToggle, onEdit, onDelet
         <View style={[s.handle, { backgroundColor: colors.sepia }]} />
 
         <View style={s.faceInner}>
-          <View style={{ flex: 1 }}>
-            <Text style={[s.drawerLabel, { color: colors.sepia }]}>Tiroir</Text>
-            <Text style={[s.drawerName, { color: colors.sepia }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.8}>{drawer.name}</Text>
-          </View>
+          {/* Nom pleine largeur */}
+          <Text style={[s.drawerLabel, { color: colors.sepia }]} numberOfLines={1}>Tiroir</Text>
+          <Text style={[s.drawerName, { color: colors.sepia }]} numberOfLines={1} adjustsFontSizeToFit minimumFontScale={0.7}>{drawer.name}</Text>
 
+          {/* Contrôles alignés à droite */}
           <View style={s.faceRight}>
             <View style={[s.countBadge, { backgroundColor: 'rgba(250,248,245,0.55)' }]}>
               <Text style={[s.countText, { color: colors.sepia }]}>{count}</Text>
@@ -242,9 +242,8 @@ function makeStyles(colors) {
       top: 10,
     },
     faceInner: {
-      flexDirection: 'row',
-      alignItems: 'center',
-      gap: 10,
+      flexDirection: 'column',
+      gap: 8,
     },
     drawerLabel: {
       fontFamily: 'DMSans_500Medium',
@@ -262,6 +261,7 @@ function makeStyles(colors) {
     faceRight: {
       flexDirection: 'row',
       alignItems: 'center',
+      alignSelf: 'flex-end',
       gap: 8,
     },
     countBadge: {
